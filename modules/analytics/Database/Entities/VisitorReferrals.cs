@@ -27,7 +27,9 @@ namespace RobotoSkunk.Analytics.Database.Entities
 	[PrimaryKey(nameof(VisitorId), nameof(Referral))]
 	public class VisitorReferrals
 	{
-		public virtual required UniqueVisitorsPerDay VisitorId { get; set; }
+		public virtual required string               VisitorId { get; set; }
+		public virtual required UniqueVisitorsPerDay Visitor   { get; set; }
+
 		public virtual required string               Referral  { get; set; }
 	}
 }

@@ -25,8 +25,10 @@ namespace RobotoSkunk.Analytics.Database.Entities
 {
 	[Table("unique_visitors_per_day")]
 	[PrimaryKey(nameof(Id))]
+	[Index(nameof(CreatedAt))]
 	public class UniqueVisitorsPerDay
 	{
+		[Column(TypeName = "text")]
 		public virtual required string   Id             { get; set; }
 
 		public virtual required DateTime CreatedAt      { get; set; }

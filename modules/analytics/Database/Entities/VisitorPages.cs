@@ -27,7 +27,9 @@ namespace RobotoSkunk.Analytics.Database.Entities
 	[PrimaryKey(nameof(VisitorId), nameof(Page))]
 	public class VisitorPages
 	{
-		public virtual required UniqueVisitorsPerDay VisitorId { get; set; }
+		public virtual required string               VisitorId { get; set; }
+		public virtual required UniqueVisitorsPerDay Visitor   { get; set; }
+
 		public virtual required string               Page      { get; set; }
 	}
 }
