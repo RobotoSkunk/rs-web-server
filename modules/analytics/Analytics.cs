@@ -17,6 +17,9 @@
  */
 
 using Microsoft.OpenApi.Models;
+using Microsoft.EntityFrameworkCore;
+
+using RobotoSkunk.Analytics.Database;
 
 
 namespace RobotoSkunk.Analytics
@@ -35,9 +38,26 @@ namespace RobotoSkunk.Analytics
 
 			builder.Services.AddControllers();
 
+			builder.Services.AddDbContext<DatabaseContext>(options => options
+				.UseNpgsql(
+					builder.Configuration.GetConnectionString("DatabaseConnection")
+				)
+				.UseSnakeCaseNamingConvention()
+			);
+
 
 			// Start of APP
 			WebApplication app = builder.Build();
+
+
+			// Initialize database
+			using (var scope = app.Services.CreateScope())
+			{
+				var services = scope.ServiceProvider;
+
+				var context = services.GetRequiredService<DatabaseContext>();
+				context.Database.Migrate();
+			}
 
 			// Endpoints
 			app.MapControllers();
