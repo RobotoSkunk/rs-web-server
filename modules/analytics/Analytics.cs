@@ -16,6 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+using Microsoft.OpenApi.Models;
+
 
 namespace RobotoSkunk.Analytics
 {
@@ -26,6 +28,11 @@ namespace RobotoSkunk.Analytics
 			WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 			builder.Services.AddEndpointsApiExplorer();
+			builder.Services.AddSwaggerGen(c =>
+			{
+				c.SwaggerDoc("v1", new OpenApiInfo());
+			});
+
 			builder.Services.AddControllers();
 
 
@@ -34,6 +41,17 @@ namespace RobotoSkunk.Analytics
 
 			// Endpoints
 			app.MapControllers();
+
+
+			if (app.Environment.IsDevelopment()) {
+				// Swagger
+				app.UseSwagger();
+				app.UseSwaggerUI(c =>
+				{
+					c.SwaggerEndpoint("/swagger/v1/swagger.json", "robotoskunk.com - Analytics API");
+				});
+			}
+
 
 			// Start
 			app.Run();
