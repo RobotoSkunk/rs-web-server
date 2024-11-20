@@ -17,26 +17,20 @@
  */
 
 
-namespace RobotoSkunk.Analytics
+using Microsoft.AspNetCore.Mvc;
+
+
+namespace RobotoSkunk.Analytics.Controllers
 {
-	public static class Analytics
+	[ApiController]
+	public class RSControllerBase : ControllerBase
 	{
-		public static void Main(string[] args)
+		protected record ResponseBase(int Status, string Message, object? Data);
+
+
+		protected ResponseBase GetResponseBase(int status, string message, object? data = null)
 		{
-			WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
-
-			builder.Services.AddEndpointsApiExplorer();
-			builder.Services.AddControllers();
-
-
-			// Start of APP
-			WebApplication app = builder.Build();
-
-			// Endpoints
-			app.MapControllers();
-
-			// Start
-			app.Run();
+			return new ResponseBase(status, message, data);
 		}
 	}
 }
