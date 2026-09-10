@@ -39,14 +39,9 @@ export default class Encryptor
 
 	public static async getEncryptionKey()
 	{
-		const rawKey = await Secrets.get('crypto.encryption_key');
-		const hmacKey = await Secrets.get('crypto.hmac_key');
+		const rawKey = (await Secrets.get('crypto.encryption_key'))!;
 
-		if (!rawKey || !hmacKey) {
-			throw new Error('Unimplemented secret keys (crypto.encryption_key, crypto.hmac_key).');
-		}
-
-		return this.hmac(rawKey, hmacKey);
+		return Buffer.from(rawKey, 'base64');
 	}
 
 	public static async encrypt(data: string)

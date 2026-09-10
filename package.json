@@ -4,8 +4,9 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "bun --dev .",
-    "migration:create": "bun bin/migration-create.ts"
+    "dev": "bun run --watch .",
+    "migration:create": "bun bin/migration-create.ts",
+    "admin:create": "bun bin/admin-create.ts"
   },
   "devDependencies": {
     "@types/bun": "latest",
@@ -15,6 +16,8 @@
     "typescript": "^7"
   },
   "dependencies": {
+    "@inquirer/password": "^5.2.2",
+    "@inquirer/prompts": "^8.7.2",
     "@napi-rs/canvas": "^1.0.8",
     "elysia": "^1.4.30",
     "kysely": "^0.29.5",

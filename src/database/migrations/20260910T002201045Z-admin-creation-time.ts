@@ -27,7 +27,6 @@ async function up(db: Kysely<unknown>): Promise<void>
 	// ALTER TABLE admins
 	await db.schema
 		.alterTable('admins')
-		.addColumn('salt', 'text', c => c.notNull())
 		.addColumn('created_at', 'timestamp', c => c.notNull().defaultTo(sql`CURRENT_TIMESTAMP`))
 		.execute();
 
@@ -44,11 +43,6 @@ async function down(db: Kysely<unknown>): Promise<void>
 	await db.schema
 		.alterTable('admins')
 		.dropColumn('created_at')
-		.execute();
-
-	await db.schema
-		.alterTable('admins')
-		.dropColumn('salt')
 		.execute();
 
 	await db.schema
