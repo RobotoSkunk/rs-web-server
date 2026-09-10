@@ -62,3 +62,4 @@ const privateKey = SRP.derivePrivateKey(salt, userId, passwordHash.toString('hex
 const totpSecret = await Admin.register(userId, username, salt, privateKey);
 
 console.log('TOTP Secret: ' + totpSecret);
+process.exit(0);
