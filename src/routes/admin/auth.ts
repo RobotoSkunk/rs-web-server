@@ -34,7 +34,7 @@ async function wait()
 	return new Promise((resolve) => setTimeout(resolve, 1000 + Math.random() * 3000));
 }
 
-const route = new Elysia({ prefix: 'auth' })
+const route = new Elysia({ prefix: '/auth' })
 	.post('challenge', async ({ body }) =>
 	{
 		await wait();
@@ -42,11 +42,21 @@ const route = new Elysia({ prefix: 'auth' })
 		const admin = await Admin.findByUsername(body.username);
 
 		if (!admin) {
-			const bogusSalt = await Secrets.get('crypto.bogus_salt')!;
+			const bogusSalt = (await Secrets.get('crypto.bogus_salt'))!;
+			const bogusUuidHash = Encryptor.hmac(body.username + '-uuid', bogusSalt + '-uuid');
+
+			const bogusUuid = [
+				bogusUuidHash.slice(0, 8),
+				bogusUuidHash.slice(8, 12),
+				'4' + bogusUuidHash.slice(13, 16),
+				bogusUuidHash.slice(16, 20),
+				bogusUuidHash.slice(20, 32)
+			].join('-');
 
 			return {
 				session_id: crypto.randomUUID(),
-				srp_salt: Encryptor.hmac(body.username, bogusSalt!).toUpperCase(),
+				user_id: bogusUuid,
+				srp_salt: Encryptor.hmac(body.username, bogusSalt).toUpperCase(),
 				ephemeral: crypto.getRandomValues(new Uint8Array(32)).toHex().toUpperCase(),
 			};
 		}
@@ -55,6 +65,7 @@ const route = new Elysia({ prefix: 'auth' })
 
 		return {
 			session_id: challengeResponse.id,
+			user_id: admin.id,
 			srp_salt: challengeResponse.salt,
 			ephemeral: challengeResponse.ephemeral,
 		};

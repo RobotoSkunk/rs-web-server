@@ -20,19 +20,20 @@ import Secrets from './crypto/secrets';
 
 import crypto from 'node:crypto';
 
-if (!Secrets.get('crypto.hmac_key')) {
+if (!await Secrets.get('crypto.hmac_key')) {
 	const hmacKey = crypto.getRandomValues(new Uint8Array(32));
 
-	Secrets.set('crypto.hmac_key', hmacKey.toBase64());
+	await Secrets.set('crypto.hmac_key', hmacKey.toBase64());
 }
 
-if (!Secrets.get('crypto.encryption_key')) {
+if (!await Secrets.get('crypto.encryption_key')) {
 	const encryptionKey = crypto.getRandomValues(new Uint8Array(32));
 
-	Secrets.set('crypto.encryption_key', encryptionKey.toBase64());
+	await Secrets.set('crypto.encryption_key', encryptionKey.toBase64());
 }
 
-if (!Secrets.get('crypto.bogus_salt')) {
+if (!await Secrets.get('crypto.bogus_salt')) {
 	const bogusSalt = crypto.getRandomValues(new Uint8Array(32));
-	Secrets.set('crypto.encryption_key', bogusSalt.toBase64());
+
+	await Secrets.set('crypto.bogus_salt', bogusSalt.toBase64());
 }

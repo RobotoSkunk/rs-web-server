@@ -78,6 +78,7 @@ export default class Admin
 	}
 
 	public static async register(
+		userId: string,
 		username: string,
 		passwordSalt: string,
 		passwordVerifier: string
@@ -90,6 +91,7 @@ export default class Admin
 			const result = await dbClient.conn
 				.insertInto('admins')
 				.values({
+					id: userId,
 					username,
 					password_salt: passwordSalt,
 					password_verifier: passwordVerifier,

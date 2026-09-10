@@ -20,7 +20,7 @@ import Elysia from 'elysia';
 
 import authRouter from './auth';
 
-const adminRouter = new Elysia({ prefix: '/admin' })
+const adminRouter = new Elysia()
 	.use(authRouter)
 ;
 
