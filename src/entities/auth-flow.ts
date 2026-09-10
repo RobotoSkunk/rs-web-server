@@ -20,11 +20,14 @@ import {
 	dbClient,
 } from '../database/client';
 
+import {
+	timingSafeEqual,
+} from 'node:crypto';
+
 import Admin from './admin';
 import Encryptor from '../crypto/encryptor';
 
 import SRP from 'secure-remote-password/server';
-import * as OTPLib from 'otplib';
 import Secrets from '../crypto/secrets';
 
 export default class AuthFlow
@@ -148,16 +151,10 @@ export default class AuthFlow
 		const hmacKey = await Secrets.get('crypto.hmac_key');
 		const hmac = Encryptor.hmac(rawVerifierBuffer, hmacKey!);
 
-		let equals = true;
-
-		for (let i = 0; i < verifier!.length; i++) {
-			const dbVerifierCharCode = verifier!.charCodeAt(i);
-			const verifierCharCode = hmac.charCodeAt(i);
-
-			if (dbVerifierCharCode != verifierCharCode) {
-				equals = false;
-			}
-		}
+		let equals = timingSafeEqual(
+			Buffer.from(verifier!),
+			Buffer.from(hmac)
+		);
 
 		return equals;
 	}

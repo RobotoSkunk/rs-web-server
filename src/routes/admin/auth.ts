@@ -56,8 +56,8 @@ const route = new Elysia({ prefix: '/auth' })
 			return {
 				session_id: crypto.randomUUID(),
 				user_id: bogusUuid,
-				srp_salt: Encryptor.hmac(body.username, bogusSalt).toUpperCase(),
-				ephemeral: crypto.getRandomValues(new Uint8Array(32)).toHex().toUpperCase(),
+				srp_salt: Encryptor.hmac(body.username, bogusSalt),
+				ephemeral: crypto.getRandomValues(new Uint8Array(32)).toHex(),
 			};
 		}
 
