@@ -16,18 +16,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 **/
 
-export const tableName = 'admins';
+import Elysia from 'elysia';
 
-export interface DB_Admins
-{
-	id?: string;
-	username?: string;
-	password_salt?: string;
-	password_verifier?: string;
-	totp_key?: string;
-	created_at?: Date;
-}
+import authRouter from './auth';
 
-export type PartialDB = {
-	[ tableName ]: DB_Admins,
-};
+const adminRouter = new Elysia({ prefix: '/admin' })
+	.use(authRouter)
+;
+
+export default adminRouter;

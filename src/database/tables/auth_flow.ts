@@ -16,18 +16,19 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 **/
 
-export const tableName = 'admins';
+export const tableName = 'auth_flow';
 
-export interface DB_Admins
+export interface DB_AuthFlow
 {
 	id?: string;
-	username?: string;
-	password_salt?: string;
-	password_verifier?: string;
-	totp_key?: string;
-	created_at?: Date;
+	admin_id?: string;
+	client_ephemeral_public?: string | null;
+	server_ephemeral_public?: string | null;
+	server_ephemeral_secret?: string | null;
+	verifier?: string | null;
+	expires_at?: Date;
 }
 
 export type PartialDB = {
-	[ tableName ]: DB_Admins,
+	[ tableName ]: DB_AuthFlow,
 };

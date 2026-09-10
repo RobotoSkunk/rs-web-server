@@ -16,18 +16,39 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 **/
 
-export const tableName = 'admins';
+import {
+	secrets,
+} from 'bun';
 
-export interface DB_Admins
+
+type keyNames = 'crypto.bogus_salt' | 'crypto.encryption_key' | 'crypto.hmac_key';
+
+export default class Secrets
 {
-	id?: string;
-	username?: string;
-	password_salt?: string;
-	password_verifier?: string;
-	totp_key?: string;
-	created_at?: Date;
-}
+	private static readonly service = 'com.robotoskunk.admin';
 
-export type PartialDB = {
-	[ tableName ]: DB_Admins,
-};
+	public static async set(name: keyNames, value: string)
+	{
+		await secrets.set({
+			service: this.service,
+			name,
+			value,
+		});
+	}
+
+	public static async get(name: keyNames)
+	{
+		return await secrets.get({
+			service: this.service,
+			name,
+		});
+	}
+
+	public static async delete(name: keyNames)
+	{
+		return await secrets.delete({
+			service: this.service,
+			name,
+		});
+	}
+}

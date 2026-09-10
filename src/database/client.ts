@@ -16,18 +16,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 **/
 
-export const tableName = 'admins';
+import Database from './connection';
 
-export interface DB_Admins
-{
-	id?: string;
-	username?: string;
-	password_salt?: string;
-	password_verifier?: string;
-	totp_key?: string;
-	created_at?: Date;
-}
-
-export type PartialDB = {
-	[ tableName ]: DB_Admins,
-};
+export const dbClient = new Database();

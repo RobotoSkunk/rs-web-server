@@ -16,18 +16,47 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 **/
 
-export const tableName = 'admins';
+import {
+	Kysely,
+	sql,
+} from 'kysely';
 
-export interface DB_Admins
+
+async function up(db: Kysely<unknown>): Promise<void>
 {
-	id?: string;
-	username?: string;
-	password_salt?: string;
-	password_verifier?: string;
-	totp_key?: string;
-	created_at?: Date;
+	// ALTER TABLE admins
+	await db.schema
+		.alterTable('admins')
+		.addColumn('salt', 'text', c => c.notNull())
+		.addColumn('created_at', 'timestamp', c => c.notNull().defaultTo(sql`CURRENT_TIMESTAMP`))
+		.execute();
+
+	// CREATE INDEX ind_admins_username
+	await db.schema
+		.createIndex('ind_admins_username')
+		.on('admins')
+		.column('username')
+		.execute();
 }
 
-export type PartialDB = {
-	[ tableName ]: DB_Admins,
+async function down(db: Kysely<unknown>): Promise<void>
+{
+	await db.schema
+		.alterTable('admins')
+		.dropColumn('created_at')
+		.execute();
+
+	await db.schema
+		.alterTable('admins')
+		.dropColumn('salt')
+		.execute();
+
+	await db.schema
+		.dropIndex('ind_admins_username')
+		.execute();
+}
+
+export {
+	up,
+	down,
 };

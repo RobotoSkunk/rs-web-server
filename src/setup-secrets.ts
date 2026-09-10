@@ -16,18 +16,23 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 **/
 
-export const tableName = 'admins';
+import Secrets from './crypto/secrets';
 
-export interface DB_Admins
-{
-	id?: string;
-	username?: string;
-	password_salt?: string;
-	password_verifier?: string;
-	totp_key?: string;
-	created_at?: Date;
+import crypto from 'node:crypto';
+
+if (!Secrets.get('crypto.hmac_key')) {
+	const hmacKey = crypto.getRandomValues(new Uint8Array(32));
+
+	Secrets.set('crypto.hmac_key', hmacKey.toBase64());
 }
 
-export type PartialDB = {
-	[ tableName ]: DB_Admins,
-};
+if (!Secrets.get('crypto.encryption_key')) {
+	const encryptionKey = crypto.getRandomValues(new Uint8Array(32));
+
+	Secrets.set('crypto.encryption_key', encryptionKey.toBase64());
+}
+
+if (!Secrets.get('crypto.bogus_salt')) {
+	const bogusSalt = crypto.getRandomValues(new Uint8Array(32));
+	Secrets.set('crypto.encryption_key', bogusSalt.toBase64());
+}

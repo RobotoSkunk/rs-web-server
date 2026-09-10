@@ -18,17 +18,36 @@
 
 import {
 	Kysely,
+	sql,
 } from 'kysely';
 
-import * as admins from './tables/admins';
-import * as audit_logs from './tables/audit_logs';
-import * as auth_flow from './tables/auth_flow';
-import * as auth_tokens from './tables/auth_tokens';
 
-export type DatabaseSchemaType =
-	admins.PartialDB &
-	audit_logs.PartialDB &
-	auth_flow.PartialDB &
-	auth_tokens.PartialDB;
+async function up(db: Kysely<unknown>): Promise<void>
+{
+	// CREATE TABLE auth_flow
+	await db.schema
+		.createTable('auth_flow')
+		.addColumn('id', 'uuid', c => c.primaryKey().defaultTo(sql`GEN_RANDOM_UUID()`))
+		.addColumn('admin_id', 'uuid', c => c.notNull())
+		.addColumn('client_ephemeral_public', 'text')
+		.addColumn('server_ephemeral_public', 'text')
+		.addColumn('server_ephemeral_secret', 'text')
+		.addColumn('verifier', 'text')
+		.addColumn('expires_at', 'timestamp', c => c.notNull().defaultTo(sql`CURRENT_TIMESTAMP + '1 minute'`))
 
-export type DatabaseSchema = Kysely<DatabaseSchemaType>;
+		.addForeignKeyConstraint('fk_auth_flow_admin_id', [ 'admin_id' ], 'admins', [ 'id' ])
+
+		.execute();
+}
+
+async function down(db: Kysely<unknown>): Promise<void>
+{
+	await db.schema
+		.dropTable('auth_flow')
+		.execute();
+}
+
+export {
+	up,
+	down,
+};
