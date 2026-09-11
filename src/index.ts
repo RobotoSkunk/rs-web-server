@@ -20,6 +20,10 @@ import {
 	dbClient,
 } from './database/client';
 
+import workers from './workers';
+
+import Elysia from 'elysia';
+
 import adminRouter from './routes/admin';
 
 // Verify if the required environment variables are present.
@@ -61,9 +65,12 @@ try {
 	process.exit(-1);
 }
 
+// Execute workers
+workers();
 
 // Start admin and public API
-adminRouter
+const adminApi = new Elysia()
+	.use(adminRouter)
 	.listen(process.env.ADMIN_PORT!);
 
 console.log(`Admin API listening on port ${process.env.ADMIN_PORT}`);
