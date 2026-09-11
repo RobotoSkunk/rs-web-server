@@ -167,4 +167,12 @@ export default class AuthFlow
 
 		return equals;
 	}
+
+	public async delete(): Promise<void>
+	{
+		await dbClient.conn
+			.deleteFrom('auth_flow')
+			.where('id', '=', this._id)
+			.execute();
+	}
 }

@@ -88,6 +88,8 @@ const route = new Elysia({ prefix: '/auth' })
 		const response = await authFlow.verify(body.session_proof);
 
 		if (!response) {
+			await authFlow.delete();
+
 			return {
 				success: false,
 			};
@@ -131,6 +133,7 @@ const route = new Elysia({ prefix: '/auth' })
 			};
 		}
 
+		await authFlow.delete();
 		// TODO: add the authentication token cookie generation.
 
 		return {
