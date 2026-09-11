@@ -17,24 +17,40 @@
 **/
 
 import {
-	authTokenModel,
-} from '../../models/auth-token';
+	Elysia,
+	t,
+} from 'elysia';
 
-import Elysia from 'elysia';
-
-import authRouter from './auth';
+import AuthToken from '../entities/auth-token';
 
 
-const adminRouter = new Elysia()
-	.use(authRouter)
-	.use(authTokenModel)
-	.get('/identity', ({ authToken }) =>
-	{
-		return {
-			id: authToken.admin.id,
-			username: authToken.admin.username,
-		};
+export const authTokenModel = new Elysia({ name: 'auth' })
+	.guard({
+		cookie: t.Cookie({
+			auth_token: t.String({ pattern: '^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$' }),
+		}),
 	})
-;
+	.resolve({ as: 'scoped' }, async ({ cookie: { auth_token }, status }) =>
+	{
+		if (!auth_token || !auth_token.value) {
+			throw status(401, {
+				error: {
+					message: 'Unauthorized.',
+				},
+			});
+		}
 
-export default adminRouter;
+		const token = await AuthToken.authenticate(auth_token.value as string);
+
+		if (!token) {
+			throw status(401, {
+				error: {
+					message: 'Unauthorized.',
+				},
+			});
+		}
+
+		return {
+			authToken: token,
+		};
+	});
