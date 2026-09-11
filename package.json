@@ -6,8 +6,7 @@
   "scripts": {
     "dev": "bun run --watch .",
     "migration:create": "bun bin/migration-create.ts",
-    "admin:create": "bun bin/admin-create.ts",
-    "test:login-flow": "bun test ./tests/login-flow.ts"
+    "admin:create": "bun bin/admin-create.ts"
   },
   "devDependencies": {
     "@elysia/server-timing": "^1.4.1",
