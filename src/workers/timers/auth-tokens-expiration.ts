@@ -16,5 +16,24 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 **/
 
-export * as _auth_flow_expiration from './auth-flow-expiration';
-export * as _auth_tokens_expiration from './auth-tokens-expiration';
+import {
+	sql,
+} from 'kysely';
+
+import {
+	dbClient,
+} from '../../database/client';
+
+
+export default async () =>
+{
+	try {
+		await dbClient.conn
+			.deleteFrom('auth_tokens')
+			.where('expires_at', '<', sql<Date>`CURRENT_TIMESTAMP`)
+			.execute();
+	} catch (e) {
+		console.log(new Date());
+		console.error(e);
+	}
+};
