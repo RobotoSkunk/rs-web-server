@@ -43,6 +43,8 @@ export const authTokenModel = new Elysia({ name: 'auth' })
 		const token = await AuthToken.authenticate(auth_token.value as string);
 
 		if (!token) {
+			auth_token.remove();
+
 			throw status(401, {
 				error: {
 					message: 'Unauthorized.',

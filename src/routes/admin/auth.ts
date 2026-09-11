@@ -43,8 +43,8 @@ async function wait(min: number, max: number)
 const route = new Elysia({ prefix: '/auth' })
 	.onBeforeHandle(async ({ cookie, status }) =>
 	{
-		if (cookie.auth_token?.value) {
-			const authToken = cookie.auth_token?.value as string;
+		if (cookie.auth_token && cookie.auth_token.value) {
+			const authToken = cookie.auth_token.value as string;
 			const token = await AuthToken.authenticate(authToken);
 
 			if (token) {
@@ -53,6 +53,8 @@ const route = new Elysia({ prefix: '/auth' })
 						message: 'Unauthorized.',
 					},
 				});
+			} else {
+				cookie.auth_token.remove();
 			}
 		}
 	})
