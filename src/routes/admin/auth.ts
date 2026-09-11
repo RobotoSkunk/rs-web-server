@@ -27,6 +27,7 @@ import Encryptor from '../../crypto/encryptor';
 
 import crypto from 'node:crypto';
 import AuthFlow from '../../entities/auth-flow';
+import AuthToken from '../../entities/auth-token';
 
 
 async function waitForTheTurtleCrossingTheRoad()
@@ -40,14 +41,19 @@ async function wait(min: number, max: number)
 }
 
 const route = new Elysia({ prefix: '/auth' })
-	.onBeforeHandle(({ cookie, status }) =>
+	.onBeforeHandle(async ({ cookie, status }) =>
 	{
 		if (cookie.auth_token?.value) {
-			throw status(403, {
-				error: {
-					message: 'Unauthorized.',
-				},
-			});
+			const authToken = cookie.auth_token?.value as string;
+			const token = await AuthToken.authenticate(authToken);
+
+			if (token) {
+				throw status(403, {
+					error: {
+						message: 'Unauthorized.',
+					},
+				});
+			}
 		}
 	})
 	.post('challenge', async ({ body }) =>
@@ -127,7 +133,7 @@ const route = new Elysia({ prefix: '/auth' })
 			session_proof: t.String(),
 		}),
 	})
-	.post('authenticate', async ({ body }) =>
+	.post('authenticate', async ({ body, cookie: { auth_token } }) =>
 	{
 		await waitForTheTurtleCrossingTheRoad();
 
@@ -157,8 +163,17 @@ const route = new Elysia({ prefix: '/auth' })
 			};
 		}
 
+		const admin = authFlow.admin;
 		await authFlow.delete();
-		// TODO: add the authentication token cookie generation.
+
+		const authToken = await AuthToken.create(admin);
+
+		auth_token?.set({
+			value: authToken,
+			httpOnly: true,
+			sameSite: 'strict',
+			maxAge: 3_600_000,
+		});
 
 		return {
 			success: true,
