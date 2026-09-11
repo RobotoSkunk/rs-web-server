@@ -22,7 +22,8 @@ export interface DB_AuditLogs
 {
 	id?: string;
 	content?: string;
-	admin_id?: string;
+	admin_id?: string | null;
+	severity?: number;
 	created_at?: Date;
 }
 

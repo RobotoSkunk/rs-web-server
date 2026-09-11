@@ -16,8 +16,35 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 **/
 
-export * as _20260908T085946944Z from './20260908T085946944Z-init.ts';
-export * as _20260910T002201045Z from './20260910T002201045Z-admin-creation-time.ts';
-export * as _20260910T030646012Z from './20260910T030646012Z-authentication-flow.ts';
-export * as _20260911T031639056Z from './20260911T031639056Z-remove-unused-columns.ts';
-export * as _20260911T080036616Z from './20260911T080036616Z-audit-logs.ts';
+import {
+	Kysely,
+} from 'kysely';
+
+
+async function up(db: Kysely<unknown>): Promise<void>
+{
+	// ALTER TABLE audit_logs
+	await db.schema
+		.alterTable('audit_logs')
+		.alterColumn('admin_id', a => a.dropNotNull())
+		.addColumn('severity', 'smallint', c => c.notNull())
+		.execute();
+}
+
+async function down(db: Kysely<unknown>): Promise<void>
+{
+	await db.schema
+		.alterTable('audit_logs')
+		.dropColumn('severity')
+		.execute();
+
+	await db.schema
+		.alterTable('audit_logs')
+		.alterColumn('admin_id', a => a.setNotNull())
+		.execute();
+}
+
+export {
+	up,
+	down,
+};
