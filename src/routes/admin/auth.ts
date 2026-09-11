@@ -138,7 +138,7 @@ const route = new Elysia({ prefix: '/auth' })
 		};
 	}, {
 		body: t.Object({
-			session_id: t.String({ format: 'ipv4' }),
+			session_id: t.String({ format: 'uuid' }),
 			verifier: t.String(),
 			totp_token: t.String(),
 		}),
