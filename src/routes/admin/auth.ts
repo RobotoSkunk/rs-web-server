@@ -40,6 +40,16 @@ async function wait(min: number, max: number)
 }
 
 const route = new Elysia({ prefix: '/auth' })
+	.onBeforeHandle(({ cookie, status }) =>
+	{
+		if (cookie.auth_token?.value) {
+			throw status(403, {
+				error: {
+					message: 'Unauthorized.',
+				},
+			});
+		}
+	})
 	.post('challenge', async ({ body }) =>
 	{
 		await waitForTheTurtleCrossingTheRoad();
