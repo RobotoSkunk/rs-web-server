@@ -16,18 +16,28 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 **/
 
-export const tableName = 'auth_flow';
+import {
+	Kysely,
+} from 'kysely';
 
-export interface DB_AuthFlow
+
+async function up(db: Kysely<unknown>): Promise<void>
 {
-	id?: string;
-	admin_id?: string;
-	client_ephemeral_public?: string | null;
-	server_ephemeral_secret?: string | null;
-	verifier?: string | null;
-	expires_at?: Date;
+	await db.schema
+		.alterTable('auth_flow')
+		.dropColumn('server_ephemeral_public')
+		.execute();
 }
 
-export type PartialDB = {
-	[ tableName ]: DB_AuthFlow,
+async function down(db: Kysely<unknown>): Promise<void>
+{
+	await db.schema
+		.alterTable('auth_flow')
+		.addColumn('server_ephemeral_public', 'text')
+		.execute();
+}
+
+export {
+	up,
+	down,
 };
