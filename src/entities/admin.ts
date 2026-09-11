@@ -81,6 +81,7 @@ export default class Admin
 	{
 		const totpSecret = OTPLib.generateSecret();
 		const encryptedTotpKey = await Encryptor.encrypt(totpSecret);
+		const encryptedVerifier = await Encryptor.encrypt(verifier);
 
 		try {
 			const result = await dbClient.conn
@@ -89,7 +90,7 @@ export default class Admin
 					id,
 					username,
 					password_salt: salt,
-					password_verifier: verifier,
+					password_verifier: encryptedVerifier.toBase64(),
 					totp_key: encryptedTotpKey.toBase64(),
 				})
 				.executeTakeFirst();
@@ -115,9 +116,11 @@ export default class Admin
 			.where('id', '=', this._id)
 			.executeTakeFirst())!;
 
+		const verifier = await Encryptor.decrypt(Buffer.from(values.password_verifier!, 'base64'));
+
 		return {
 			salt: values.password_salt!,
-			verifier: values.password_verifier!,
+			verifier: verifier.toString(),
 		};
 	}
 
