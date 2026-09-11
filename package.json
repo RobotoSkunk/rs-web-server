@@ -6,9 +6,11 @@
   "scripts": {
     "dev": "bun run --watch .",
     "migration:create": "bun bin/migration-create.ts",
-    "admin:create": "bun bin/admin-create.ts"
+    "admin:create": "bun bin/admin-create.ts",
+    "test:login-flow": "bun test ./tests/login-flow.ts"
   },
   "devDependencies": {
+    "@elysia/server-timing": "^1.4.1",
     "@types/bun": "latest",
     "@types/pg": "^8.23.1"
   },
@@ -16,9 +18,12 @@
     "typescript": "^7"
   },
   "dependencies": {
+    "@elysia/cors": "^1.4.2",
+    "@elysia/static": "^1.4.11",
     "@inquirer/password": "^5.2.2",
     "@inquirer/prompts": "^8.7.2",
     "@napi-rs/canvas": "^1.0.8",
+    "bcryptjs": "^3.0.3",
     "elysia": "^1.4.30",
     "kysely": "^0.29.5",
     "otplib": "^13.5.0",

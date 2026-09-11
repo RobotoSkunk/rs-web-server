@@ -37,8 +37,7 @@ async function wait()
 const route = new Elysia({ prefix: '/auth' })
 	.post('challenge', async ({ body }) =>
 	{
-		await wait();
-
+		// await wait();
 		const admin = await Admin.findByUsername(body.username);
 
 		if (!admin) {
@@ -61,7 +60,7 @@ const route = new Elysia({ prefix: '/auth' })
 			};
 		}
 
-		const challengeResponse = await AuthFlow.challenge(admin);
+		const challengeResponse = await AuthFlow.challenge(admin, body.client_ephemeral);
 
 		return {
 			session_id: challengeResponse.id,
@@ -77,7 +76,7 @@ const route = new Elysia({ prefix: '/auth' })
 	})
 	.post('verify', async ({ body }) =>
 	{
-		await wait();
+		// await wait();
 		const authFlow = await AuthFlow.findAuthFlow(body.session_id);
 
 		if (!authFlow) {
@@ -101,13 +100,13 @@ const route = new Elysia({ prefix: '/auth' })
 		};
 	}, {
 		body: t.Object({
-			session_id: t.String({ format: 'ipv4' }),
+			session_id: t.String({ format: 'uuid' }),
 			session_proof: t.String(),
 		}),
 	})
 	.post('authenticate', async ({ body }) =>
 	{
-		await wait();
+		// await wait();
 		const authFlow = await AuthFlow.findAuthFlow(body.session_id);
 
 		if (!authFlow) {

@@ -77,12 +77,7 @@ export default class Admin
 		return new Admin(id!, adminData.username!);
 	}
 
-	public static async register(
-		userId: string,
-		username: string,
-		passwordSalt: string,
-		passwordVerifier: string
-	): Promise<string | null>
+	public static async register(id: string, username: string, salt: string, verifier: string): Promise<string | null>
 	{
 		const totpSecret = OTPLib.generateSecret();
 		const encryptedTotpKey = await Encryptor.encrypt(totpSecret);
@@ -91,10 +86,10 @@ export default class Admin
 			const result = await dbClient.conn
 				.insertInto('admins')
 				.values({
-					id: userId,
+					id,
 					username,
-					password_salt: passwordSalt,
-					password_verifier: passwordVerifier,
+					password_salt: salt,
+					password_verifier: verifier,
 					totp_key: encryptedTotpKey.toBase64(),
 				})
 				.executeTakeFirst();
@@ -111,7 +106,7 @@ export default class Admin
 
 	public async getSRPValues()
 	{
-		const { password_salt, password_verifier } = (await dbClient.conn
+		const values = (await dbClient.conn
 			.selectFrom('admins')
 			.select([
 				'password_salt',
@@ -121,8 +116,8 @@ export default class Admin
 			.executeTakeFirst())!;
 
 		return {
-			salt: password_salt!,
-			verifier: password_verifier!,
+			salt: values.password_salt!,
+			verifier: values.password_verifier!,
 		};
 	}
 

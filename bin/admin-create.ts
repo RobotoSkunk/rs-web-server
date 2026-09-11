@@ -24,20 +24,12 @@ import {
 	input,
 } from '@inquirer/prompts';
 
-import {
-	argon2Sync,
-} from 'node:crypto';
-
 import passwordPrompt from '@inquirer/password';
 import SRP from 'secure-remote-password/client';
 import crypto from 'node:crypto';
+import bcrypt from 'bcryptjs';
 
 import Admin from '../src/entities/admin';
-
-const username = await input({ message: 'Username: ' });
-const password = await passwordPrompt({ message: 'Password: ' });
-
-console.log('SUDO authorization is required to proceed.');
 
 const exitCode = (await $`sudo -k -S true`.nothrow()).exitCode;
 
@@ -45,21 +37,20 @@ if (exitCode !== 0) {
 	process.exit(0);
 }
 
+const username = await input({ message: 'Username: ' });
+const password = await passwordPrompt({ message: 'Password: ' });
 
 const userId = crypto.randomUUID();
 const salt = SRP.generateSalt();
 
-const passwordHash = argon2Sync('argon2id', {
-	message: password,
-	nonce: Buffer.from(salt),
-	parallelism: 4,
-	tagLength: 64,
-	memory: 65536,
-	passes: 3,
-});
+const encoder = new TextEncoder();
+const bcryptSalt = bcrypt.encodeBase64(encoder.encode(salt), 16);
+const passwordHash = await bcrypt.hash(password, `$2b$10$${bcryptSalt}`);
 
-const privateKey = SRP.derivePrivateKey(salt, userId, passwordHash.toString('hex'));
-const totpSecret = await Admin.register(userId, username, salt, privateKey);
+const privateKey = SRP.derivePrivateKey(salt, userId, passwordHash);
+const verifier = SRP.deriveVerifier(privateKey);
+
+const totpSecret = await Admin.register(userId, username, salt, verifier);
 
 console.log('TOTP Secret: ' + totpSecret);
 process.exit(0);

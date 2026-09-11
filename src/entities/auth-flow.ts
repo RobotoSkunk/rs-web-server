@@ -51,7 +51,11 @@ export default class AuthFlow
 		return this._admin;
 	}
 
-	public static async challenge(admin: Admin): Promise<{ id: string; ephemeral: string; salt: string }>
+	public static async challenge(admin: Admin, clientEphemeral: string): Promise<{
+		id: string;
+		ephemeral: string;
+		salt: string;
+	}>
 	{
 		const srpValues = await admin.getSRPValues();
 		const ephemeral = SRP.generateEphemeral(srpValues.verifier);
@@ -60,8 +64,8 @@ export default class AuthFlow
 			.insertInto('auth_flow')
 			.values({
 				admin_id: admin.id,
-				server_ephemeral_public: ephemeral.public,
 				server_ephemeral_secret: ephemeral.secret,
+				client_ephemeral_public: clientEphemeral,
 			})
 			.returning('id')
 			.executeTakeFirst();
@@ -92,7 +96,7 @@ export default class AuthFlow
 	public async verify(clientProof: string): Promise<{ proof: string; verifier: string } | null>
 	{
 		const srpValues = await this.admin.getSRPValues();
-		const { server_ephemeral_secret, client_ephemeral_public } = (await dbClient.conn
+		const ephemerals = (await dbClient.conn
 			.selectFrom('auth_flow')
 			.select([
 				'server_ephemeral_secret',
@@ -105,8 +109,8 @@ export default class AuthFlow
 
 		try {
 			const session = SRP.deriveSession(
-				server_ephemeral_secret!,
-				client_ephemeral_public!,
+				ephemerals.server_ephemeral_secret!,
+				ephemerals.client_ephemeral_public!,
 				srpValues.salt,
 				this.admin.id,
 				srpValues.verifier,
@@ -115,6 +119,7 @@ export default class AuthFlow
 
 			proof = session.proof;
 		} catch (e) {
+			console.error(e);
 			return null;
 		}
 
@@ -146,13 +151,17 @@ export default class AuthFlow
 			.where('id', '=', this._id)
 			.executeTakeFirst())!;
 
+		if (!verifier) {
+			return false;
+		}
+
 		const rawVerifierBuffer = Buffer.from(rawVerifier, 'base64');
 
 		const hmacKey = await Secrets.get('crypto.hmac_key');
 		const hmac = Encryptor.hmac(rawVerifierBuffer, hmacKey!);
 
 		let equals = timingSafeEqual(
-			Buffer.from(verifier!),
+			Buffer.from(verifier),
 			Buffer.from(hmac)
 		);
 
