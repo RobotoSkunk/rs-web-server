@@ -101,11 +101,16 @@ export default class AuthFlow
 			.select([
 				'server_ephemeral_secret',
 				'client_ephemeral_public',
+				'verifier',
 			])
 			.where('id', '=', this._id)
 			.executeTakeFirst())!;
 
 		let proof = '';
+
+		if (ephemerals.verifier != null) {
+			return null;
+		}
 
 		try {
 			const session = SRP.deriveSession(

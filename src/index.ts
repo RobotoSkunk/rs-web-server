@@ -20,11 +20,15 @@ import {
 	dbClient,
 } from './database/client';
 
-import workers from './workers';
+import {
+	serverTiming,
+} from '@elysia/server-timing';
 
 import Elysia from 'elysia';
 
+import workers from './workers';
 import adminRouter from './routes/admin';
+
 
 // Verify if the required environment variables are present.
 const requiredEnvVariables = [
@@ -69,7 +73,8 @@ try {
 workers();
 
 // Start admin and public API
-const adminApi = new Elysia()
+new Elysia()
+	.use(serverTiming())
 	.use(adminRouter)
 	.listen(process.env.ADMIN_PORT!);
 

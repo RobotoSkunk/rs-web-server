@@ -29,18 +29,26 @@ import crypto from 'node:crypto';
 import AuthFlow from '../../entities/auth-flow';
 
 
-async function wait()
+async function waitForTheTurtleCrossingTheRoad()
 {
 	return new Promise((resolve) => setTimeout(resolve, 1000 + Math.random() * 3000));
+}
+
+async function wait(min: number, max: number)
+{
+	return new Promise((resolve) => setTimeout(resolve, min + Math.random() * (max - min)));
 }
 
 const route = new Elysia({ prefix: '/auth' })
 	.post('challenge', async ({ body }) =>
 	{
-		// await wait();
+		await waitForTheTurtleCrossingTheRoad();
+
 		const admin = await Admin.findByUsername(body.username);
 
 		if (!admin) {
+			await wait(18, 20);
+
 			const bogusSalt = (await Secrets.get('crypto.bogus_salt'))!;
 			const bogusUuidHash = Encryptor.hmac(body.username + '-uuid', bogusSalt + '-uuid');
 
@@ -76,10 +84,13 @@ const route = new Elysia({ prefix: '/auth' })
 	})
 	.post('verify', async ({ body }) =>
 	{
-		// await wait();
+		await waitForTheTurtleCrossingTheRoad();
+
 		const authFlow = await AuthFlow.findAuthFlow(body.session_id);
 
 		if (!authFlow) {
+			await wait(56, 58);
+
 			return {
 				success: false,
 			};
@@ -108,10 +119,13 @@ const route = new Elysia({ prefix: '/auth' })
 	})
 	.post('authenticate', async ({ body }) =>
 	{
-		// await wait();
+		await waitForTheTurtleCrossingTheRoad();
+
 		const authFlow = await AuthFlow.findAuthFlow(body.session_id);
 
 		if (!authFlow) {
+			await wait(3, 3);
+
 			return {
 				success: false,
 			};
@@ -127,7 +141,7 @@ const route = new Elysia({ prefix: '/auth' })
 
 		const totpEquals = await authFlow.admin.validateTotp(body.totp_token);
 
-		if (!totpEquals) {
+		if (!totpEquals.valid) {
 			return {
 				success: false,
 			};
@@ -143,7 +157,7 @@ const route = new Elysia({ prefix: '/auth' })
 		body: t.Object({
 			session_id: t.String({ format: 'uuid' }),
 			verifier: t.String(),
-			totp_token: t.String(),
+			totp_token: t.String({ minLength: 6, maxLength: 6 }),
 		}),
 	})
 ;
