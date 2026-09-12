@@ -5,6 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "bun run --watch .",
+    "start": "bun run bin/server-start.ts",
     "migration:create": "bun bin/migration-create.ts",
     "admin:create": "bun bin/admin-create.ts"
   },
@@ -27,6 +28,7 @@
     "kysely": "^0.29.5",
     "otplib": "^13.5.0",
     "pg": "^8.23.0",
+    "pm2": "^7.0.4",
     "secure-remote-password": "^0.3.1"
   }
 }
