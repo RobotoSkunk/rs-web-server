@@ -28,6 +28,7 @@ import Elysia from 'elysia';
 
 import workers from './workers';
 import adminRouter from './routes/admin';
+import Secrets from './crypto/secrets';
 
 
 // Verify if the required environment variables are present.
@@ -39,6 +40,7 @@ const requiredEnvVariables = [
 	'DB_PASSWORD',
 	'DB_PORT',
 	'DB_USER',
+	'SECRET_STORAGE_DIRECTORY',
 ];
 
 const missingEnvVariables: string[] = [];
@@ -56,7 +58,14 @@ if (missingEnvVariables.length > 0) {
 
 
 // Set up the server's secrets
-import './setup-secrets';
+try {
+	await Secrets.loadSecrets();
+} catch (e) {
+	console.error('Fatal error when trying to initialize the secret storage');
+	console.error(e);
+
+	process.exit(-1);
+}
 
 
 // Try to migrate the database
@@ -66,7 +75,7 @@ try {
 	console.error('Fatal error when trying to migrate database.');
 	console.error(e);
 
-	process.exit(-1);
+	process.exit(-2);
 }
 
 // Execute workers

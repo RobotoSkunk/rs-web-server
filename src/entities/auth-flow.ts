@@ -129,7 +129,7 @@ export default class AuthFlow
 		}
 
 		const verifier = crypto.getRandomValues(new Uint8Array(32));
-		const hmacKey = await Secrets.get('crypto.hmac_key');
+		const hmacKey = await Secrets.get('hmac_salt');
 
 		await dbClient.conn
 			.updateTable('auth_flow')
@@ -162,7 +162,7 @@ export default class AuthFlow
 
 		const rawVerifierBuffer = Buffer.from(rawVerifier, 'base64');
 
-		const hmacKey = await Secrets.get('crypto.hmac_key');
+		const hmacKey = await Secrets.get('hmac_salt');
 		const hmac = Encryptor.hmac(rawVerifierBuffer, hmacKey!);
 
 		let equals = timingSafeEqual(

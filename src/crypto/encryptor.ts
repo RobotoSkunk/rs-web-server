@@ -39,14 +39,13 @@ export default class Encryptor
 
 	public static async getEncryptionKey()
 	{
-		const rawKey = (await Secrets.get('crypto.encryption_key'))!;
-
-		return Buffer.from(rawKey, 'base64');
+		const rawKey = (await Secrets.get('encryption_key'))!;
+		return rawKey;
 	}
 
-	public static async encrypt(data: string)
+	public static async encrypt(data: string | Buffer<ArrayBuffer>, key?: Buffer<ArrayBuffer>)
 	{
-		const cryptoKey = await this.getEncryptionKey();
+		const cryptoKey = key ?? await this.getEncryptionKey();
 		const iv = crypto.getRandomValues(new Uint8Array(12));
 
 		const cipher = crypto.createCipheriv(this.encryptionAlgorithm, cryptoKey, iv);
@@ -61,9 +60,9 @@ export default class Encryptor
 		return Buffer.concat([ iv, cipherText, authTag ]);
 	}
 
-	public static async decrypt(data: Buffer)
+	public static async decrypt(data: Buffer, key?: Buffer<ArrayBuffer>)
 	{
-		const cryptoKey = await this.getEncryptionKey();
+		const cryptoKey = key ?? await this.getEncryptionKey();
 
 		const iv = data.subarray(0, 12);
 		const authTag = data.subarray(data.length - 16);
