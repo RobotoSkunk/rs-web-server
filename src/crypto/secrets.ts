@@ -41,12 +41,18 @@ type SetupKeyNames = Exclude<InternalKeyNames,
 	'crypto.hmac_salt'
 >;
 
-type SecretStorage = { [key in InternalKeyNames]?: string };
 type SecretCache = { [key: string]: Buffer };
+type SecretStorage = {
+	'core.version': number;
+} & {
+	[key in InternalKeyNames]?: string;
+};
 
 
 export default class Secrets
 {
+	private static readonly version = 1;
+
 	private static initalized = false;
 	private static cache: SecretCache = { };
 	private static directory = process.env.SECRET_STORAGE_DIRECTORY!;
@@ -74,7 +80,9 @@ export default class Secrets
 		const exists = await file.exists();
 
 		if (!exists) {
-			return { };
+			return {
+				'core.version': this.version,
+			};
 		}
 
 		return await file.json() as SecretStorage;
