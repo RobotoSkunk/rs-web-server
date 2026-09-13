@@ -96,7 +96,7 @@ const route = new Elysia({ prefix: '/auth' })
 			client_ephemeral: t.String(),
 		}),
 	})
-	.post('verify', async ({ body }) =>
+	.post('verify', async ({ body, status }) =>
 	{
 		await waitForTheTurtleCrossingTheRoad();
 
@@ -105,9 +105,11 @@ const route = new Elysia({ prefix: '/auth' })
 		if (!authFlow) {
 			await wait(56, 58);
 
-			return {
-				success: false,
-			};
+			return status(401, {
+				error: {
+					message: 'Invalid username or password.',
+				},
+			});
 		}
 
 		const response = await authFlow.verify(body.session_proof);
@@ -115,9 +117,11 @@ const route = new Elysia({ prefix: '/auth' })
 		if (!response) {
 			await authFlow.delete();
 
-			return {
-				success: false,
-			};
+			return status(401, {
+				error: {
+					message: 'Invalid username or password.',
+				},
+			});
 		}
 
 		return {
@@ -131,7 +135,7 @@ const route = new Elysia({ prefix: '/auth' })
 			session_proof: t.String(),
 		}),
 	})
-	.post('authenticate', async ({ body, cookie: { auth_token } }) =>
+	.post('authenticate', async ({ body, cookie: { auth_token }, status }) =>
 	{
 		await waitForTheTurtleCrossingTheRoad();
 
@@ -140,25 +144,31 @@ const route = new Elysia({ prefix: '/auth' })
 		if (!authFlow) {
 			await wait(3, 3);
 
-			return {
-				success: false,
-			};
+			return status(401, {
+				error: {
+					message: 'Invalid TOTP token.',
+				},
+			});
 		}
 
 		const verifierIsValid = await authFlow.validateVerifier(body.verifier);
 
 		if (!verifierIsValid) {
-			return {
-				success: false,
-			};
+			return status(401, {
+				error: {
+					message: 'Invalid TOTP token.',
+				},
+			});
 		}
 
 		const totpEquals = await authFlow.admin.validateTotp(body.totp_token);
 
 		if (!totpEquals.valid) {
-			return {
-				success: false,
-			};
+			return status(401, {
+				error: {
+					message: 'Invalid TOTP token.',
+				},
+			});
 		}
 
 		const admin = authFlow.admin;
