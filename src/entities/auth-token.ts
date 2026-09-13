@@ -87,7 +87,7 @@ export default class AuthToken
 		}
 
 		// Check the validator
-		const salt = await Secrets.get('hmac_salt');
+		const salt = await Secrets.get('crypto.hmac_salt');
 		const validatorBuffer = Buffer.from(validator!, 'base64url');
 
 		const expected = Buffer.from(tokenData.validator!);
@@ -117,7 +117,7 @@ export default class AuthToken
 		const id = Buffer.from(crypto.getRandomValues(new Uint8Array(32))).toString('base64url');
 		const validator = Buffer.from(crypto.getRandomValues(new Uint8Array(128)));
 
-		const salt = await Secrets.get('hmac_salt');
+		const salt = await Secrets.get('crypto.hmac_salt');
 		const hashedValidator = Encryptor.hmac(validator, salt!);
 
 		await getClient().conn

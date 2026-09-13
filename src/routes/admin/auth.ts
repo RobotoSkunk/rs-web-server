@@ -48,11 +48,7 @@ const route = new Elysia({ prefix: '/auth' })
 			const token = await AuthToken.authenticate(authToken);
 
 			if (token) {
-				throw status(403, {
-					error: {
-						message: 'Unauthorized.',
-					},
-				});
+				throw status(403);
 			} else {
 				cookie.auth_token.remove();
 			}

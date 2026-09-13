@@ -33,11 +33,7 @@ export const authTokenModel = new Elysia({ name: 'auth' })
 	.resolve({ as: 'scoped' }, async ({ cookie: { auth_token }, status }) =>
 	{
 		if (!auth_token || !auth_token.value) {
-			throw status(401, {
-				error: {
-					message: 'Unauthorized.',
-				},
-			});
+			throw status(401);
 		}
 
 		const token = await AuthToken.authenticate(auth_token.value as string);
@@ -45,11 +41,7 @@ export const authTokenModel = new Elysia({ name: 'auth' })
 		if (!token) {
 			auth_token.remove();
 
-			throw status(401, {
-				error: {
-					message: 'Unauthorized.',
-				},
-			});
+			throw status(401);
 		}
 
 		return {

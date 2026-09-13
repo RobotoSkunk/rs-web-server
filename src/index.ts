@@ -87,8 +87,43 @@ workers();
 
 // Start admin and public API
 new Elysia()
+	.onError(({ status, code, path, error }) =>
+	{
+		switch (code) {
+			case 'INTERNAL_SERVER_ERROR': {
+				console.error(path, '\n', error);
+				break;
+			}
+			case 'NOT_FOUND':
+			case 'VALIDATION': {
+				if (code === 'VALIDATION' && process.env.NODE_ENV !== 'production') {
+					console.log(error.detail(error.message));
+				}
+
+				return status(400, {
+					error: {
+						message: `Bad request.`,
+					},
+				});
+			}
+			case 401:
+			case 403: {
+				return status(code, {
+					error: {
+						message: `Unauthorized.`,
+					},
+				});
+			}
+		}
+
+		return {
+			error: {
+				message: `Something went wrong.`,
+			},
+		};
+	})
 	.use(serverTiming())
 	.use(adminRouter)
 	.listen(process.env.ADMIN_PORT!);
 
-console.log(`Admin API listening on port ${process.env.ADMIN_PORT}`);
+console.log(`[${new Date().toISOString()}] Admin API listening on port ${process.env.ADMIN_PORT}.`);
