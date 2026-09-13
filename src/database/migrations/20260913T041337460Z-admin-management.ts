@@ -36,7 +36,15 @@ async function up(db: Kysely<unknown>): Promise<void>
 
 async function down(db: Kysely<unknown>): Promise<void>
 {
-	// Migration code
+	await db.schema
+		.alterTable('admins')
+		.dropColumn('disabled')
+		.execute();
+
+	await db.schema
+		.alterTable('admins')
+		.dropConstraint('uc_username')
+		.execute();
 }
 
 export {
