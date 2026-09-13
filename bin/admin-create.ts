@@ -22,12 +22,22 @@ import {
 	input,
 } from '@inquirer/prompts';
 
+import {
+	setClient,
+} from '../src/database/client';
+
 import passwordPrompt from '@inquirer/password';
 import SRP from 'secure-remote-password/client';
 import crypto from 'node:crypto';
 import bcrypt from 'bcryptjs';
 
 import Admin from '../src/entities/admin';
+import Secrets from '../src/crypto/secrets';
+
+const dbUser = await Secrets.get('db.user');
+const dbPassword = await Secrets.get('db.password');
+
+setClient(dbUser!.toString(), dbPassword!.toString());
 
 const username = await input({ message: 'Username: ' });
 const password = await passwordPrompt({ message: 'Password: ' });

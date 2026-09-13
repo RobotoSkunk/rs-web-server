@@ -39,7 +39,7 @@ export default class Encryptor
 
 	public static async getEncryptionKey()
 	{
-		const rawKey = (await Secrets.get('encryption_key'))!;
+		const rawKey = (await Secrets.get('crypto.encryption_key'))!;
 		return rawKey;
 	}
 
