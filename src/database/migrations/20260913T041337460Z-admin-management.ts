@@ -16,19 +16,30 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 **/
 
-export const tableName = 'admins';
+import {
+	Kysely,
+} from 'kysely';
 
-export interface DB_Admins
+
+async function up(db: Kysely<unknown>): Promise<void>
 {
-	id?: string;
-	username?: string;
-	password_salt?: string;
-	password_verifier?: string;
-	totp_key?: string;
-	deleted?: boolean;
-	created_at?: Date;
+	await db.schema
+		.alterTable('admins')
+		.addColumn('disabled', 'boolean', c => c.notNull().defaultTo(false))
+		.execute();
+
+	await db.schema
+		.alterTable('admins')
+		.addUniqueConstraint('uc_username', [ 'username' ])
+		.execute();
 }
 
-export type PartialDB = {
-	[ tableName ]: DB_Admins,
+async function down(db: Kysely<unknown>): Promise<void>
+{
+	// Migration code
+}
+
+export {
+	up,
+	down,
 };
