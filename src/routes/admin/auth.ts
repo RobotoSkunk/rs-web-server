@@ -60,7 +60,7 @@ const route = new Elysia({ prefix: '/auth' })
 
 		const admin = await Admin.findByUsername(body.username);
 
-		if (!admin) {
+		if (!admin || (admin && admin.disabled)) {
 			await wait(18, 20);
 
 			const bogusSalt = (await Secrets.get('crypto.bogus_salt'))!;

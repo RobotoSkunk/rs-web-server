@@ -25,7 +25,7 @@ export interface DB_Admins
 	password_salt?: string;
 	password_verifier?: string;
 	totp_key?: string;
-	deleted?: boolean;
+	disabled?: boolean;
 	created_at?: Date;
 }
 

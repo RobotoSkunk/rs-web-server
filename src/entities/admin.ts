@@ -29,11 +29,13 @@ export default class Admin
 {
 	private _id: string;
 	private _username: string;
+	private _disabled: boolean;
 
-	constructor(id: string, username: string)
+	constructor(id: string, username: string, disabled: boolean)
 	{
 		this._id = id;
 		this._username = username;
+		this._disabled = disabled;
 	}
 
 	public get id()
@@ -46,12 +48,20 @@ export default class Admin
 		return this._username;
 	}
 
+	public get disabled()
+	{
+		return this._disabled;
+	}
+
 
 	public static async findByUsername(username: string): Promise<Admin | null>
 	{
 		const adminData = await getClient().conn
 			.selectFrom('admins')
-			.select('id')
+			.select([
+				'id',
+				'disabled',
+			])
 			.where('username', '=', username)
 			.executeTakeFirst();
 
@@ -59,14 +69,17 @@ export default class Admin
 			return null;
 		}
 
-		return new Admin(adminData.id!, username);
+		return new Admin(adminData.id!, username, adminData.disabled!);
 	}
 
 	public static async findById(id: string): Promise<Admin | null>
 	{
 		const adminData = await getClient().conn
 			.selectFrom('admins')
-			.select('username')
+			.select([
+				'username',
+				'disabled',
+			])
 			.where('id', '=', id)
 			.executeTakeFirst();
 
@@ -74,7 +87,7 @@ export default class Admin
 			return null;
 		}
 
-		return new Admin(id!, adminData.username!);
+		return new Admin(id!, adminData.username!, adminData.disabled!);
 	}
 
 	public static async register(id: string, username: string, salt: string, verifier: string): Promise<string | null>
