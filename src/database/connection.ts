@@ -38,7 +38,6 @@ import {
 	ContextMigrationProvider,
 } from './migrations/provider';
 
-
 import * as migrations from './migrations';
 
 
@@ -63,14 +62,14 @@ class Database
 	/**
 	 * Create a new database connection pool based on environment variables
 	 */
-	constructor()
+	constructor(user: string, password: string)
 	{
 		this.pool = new Pool({
 			database: process.env.DB_NAME,
 			host: process.env.DB_HOST,
-			password: process.env.DB_PASSWORD,
 			port: Number.parseInt(process.env.DB_PORT ?? '5432'),
-			user: process.env.DB_USER,
+			user,
+			password,
 		});
 
 		const dialect = new PostgresDialect({ pool: this.pool });

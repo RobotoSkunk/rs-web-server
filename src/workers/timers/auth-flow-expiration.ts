@@ -21,14 +21,14 @@ import {
 } from 'kysely';
 
 import {
-	dbClient,
+	getClient,
 } from '../../database/client';
 
 
 export default async () =>
 {
 	try {
-		await dbClient.conn
+		await getClient().conn
 			.deleteFrom('auth_flow')
 			.where('expires_at', '<', sql<Date>`CURRENT_TIMESTAMP`)
 			.execute();

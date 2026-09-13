@@ -24,10 +24,24 @@ import path from 'node:path';
 import fs from 'node:fs/promises';
 
 
-type InternalKeyNames = 'core.dek' | 'core.salt' | 'bogus_salt' | 'encryption_key' | 'hmac_salt';
-type KeyNames = Exclude<InternalKeyNames, 'core.dek' | 'core.salt'>;
+type InternalKeyNames = 'core.dek' |
+	'core.salt' |
+	'db.user' |
+	'db.password' |
+	'crypto.bogus_salt' |
+	'crypto.encryption_key' |
+	'crypto.hmac_salt';
 
-type SecretStorage = { [key in InternalKeyNames]: string };
+type KeyNames = Exclude<InternalKeyNames, 'core.dek' | 'core.salt'>;
+type SetupKeyNames = Exclude<InternalKeyNames,
+	'core.dek' |
+	'core.salt' |
+	'crypto.bogus_salt' |
+	'crypto.encryption_key' |
+	'crypto.hmac_salt'
+>;
+
+type SecretStorage = { [key in InternalKeyNames]?: string };
 type SecretCache = { [key: string]: Buffer };
 
 
@@ -60,7 +74,6 @@ export default class Secrets
 		const exists = await file.exists();
 
 		if (!exists) {
-			// @ts-ignore cry about it
 			return { };
 		}
 
@@ -101,7 +114,7 @@ export default class Secrets
 		return this.cache[name] ?? null;
 	}
 
-	public static async loadSecrets(): Promise<void>
+	public static async loadSecrets(manualSetup: { [key in SetupKeyNames]?: Buffer } = { }): Promise<void>
 	{
 		if (this.initalized) {
 			return;
@@ -147,30 +160,46 @@ export default class Secrets
 			dek = await Encryptor.decrypt(Buffer.from(storage['core.dek'], 'base64'), kek);
 		}
 
+		// Set up values
+		const keysToSet = Object.keys(manualSetup) as SetupKeyNames[];
+
+		for (const key of keysToSet) {
+			const value = Buffer.from(manualSetup[key]!);
+
+			const encryptedValue = await Encryptor.encrypt(value, dek);
+			storage[key] = encryptedValue.toBase64();
+		}
+
+
 		// Initialize values
 		const keys: KeyNames[] = [
-			'encryption_key',
-			'hmac_salt',
-			'bogus_salt',
+			'db.user',
+			'db.password',
+			'crypto.encryption_key',
+			'crypto.hmac_salt',
+			'crypto.bogus_salt',
 		];
 
 		for (const value of keys) {
-			let toCache: Buffer;
+			let toCache: Buffer | undefined = undefined;
 
-			if (!storage[value]) {
+			if (!storage[value] && value.startsWith('crypto')) {
 				const newValue = Buffer.from(crypto.getRandomValues(new Uint8Array(32)));
 				toCache = newValue;
 
 				const encryptedValue = await Encryptor.encrypt(newValue, dek);
 				storage[value] = encryptedValue.toBase64();
-			} else {
+
+			} else if (storage[value]) {
 				const encryptedValue = Buffer.from(storage[value], 'base64');
 				const decryptedValue = await Encryptor.decrypt(encryptedValue, dek);
 
 				toCache = decryptedValue;
 			}
 
-			this.cache[value] = toCache;
+			if (toCache) {
+				this.cache[value] = toCache;
+			}
 		}
 
 		await this.#writeStorageObject(storage);

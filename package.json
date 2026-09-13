@@ -7,6 +7,7 @@
     "dev": "bun run --watch .",
     "start": "bun run bin/server-start.ts",
     "migration:create": "bun bin/migration-create.ts",
+    "database:setup": "bun bin/database-setup.ts",
     "admin:create": "bun bin/admin-create.ts"
   },
   "devDependencies": {

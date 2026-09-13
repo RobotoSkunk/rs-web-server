@@ -17,7 +17,7 @@
 **/
 
 import {
-	dbClient,
+	getClient,
 } from '../database/client';
 
 import Encryptor from '../crypto/encryptor';
@@ -49,7 +49,7 @@ export default class Admin
 
 	public static async findByUsername(username: string): Promise<Admin | null>
 	{
-		const adminData = await dbClient.conn
+		const adminData = await getClient().conn
 			.selectFrom('admins')
 			.select('id')
 			.where('username', '=', username)
@@ -64,7 +64,7 @@ export default class Admin
 
 	public static async findById(id: string): Promise<Admin | null>
 	{
-		const adminData = await dbClient.conn
+		const adminData = await getClient().conn
 			.selectFrom('admins')
 			.select('username')
 			.where('id', '=', id)
@@ -84,7 +84,7 @@ export default class Admin
 		const encryptedVerifier = await Encryptor.encrypt(verifier);
 
 		try {
-			const result = await dbClient.conn
+			const result = await getClient().conn
 				.insertInto('admins')
 				.values({
 					id,
@@ -107,7 +107,7 @@ export default class Admin
 
 	public async getSRPValues()
 	{
-		const values = (await dbClient.conn
+		const values = (await getClient().conn
 			.selectFrom('admins')
 			.select([
 				'password_salt',
@@ -126,7 +126,7 @@ export default class Admin
 
 	public async validateTotp(totpToken: string)
 	{
-		const { totp_key } = (await dbClient.conn
+		const { totp_key } = (await getClient().conn
 			.selectFrom('admins')
 			.select([
 				'totp_key'

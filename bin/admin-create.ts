@@ -16,9 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 **/
 
-import {
-	$,
-} from 'bun';
+import './common/sudo';
 
 import {
 	input,
@@ -30,12 +28,6 @@ import crypto from 'node:crypto';
 import bcrypt from 'bcryptjs';
 
 import Admin from '../src/entities/admin';
-
-const exitCode = (await $`sudo -k -S true`.nothrow()).exitCode;
-
-if (exitCode !== 0) {
-	process.exit(0);
-}
 
 const username = await input({ message: 'Username: ' });
 const password = await passwordPrompt({ message: 'Password: ' });

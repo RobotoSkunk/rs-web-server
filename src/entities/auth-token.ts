@@ -17,7 +17,7 @@
 **/
 
 import {
-	dbClient,
+	getClient,
 } from '../database/client';
 
 import crypto from 'node:crypto';
@@ -62,7 +62,7 @@ export default class AuthToken
 		const validator = parts[1]!;
 
 		// Validate if the token ID exists
-		const tokenData = await dbClient.conn
+		const tokenData = await getClient().conn
 			.selectFrom('auth_tokens')
 			.select([
 				'admin_id',
@@ -78,7 +78,7 @@ export default class AuthToken
 
 		// Check the expiration of the token
 		if (tokenData.expires_at!.getTime() < Date.now()) {
-			await dbClient.conn
+			await getClient().conn
 				.deleteFrom('auth_tokens')
 				.where('id', '=', id)
 				.execute();
@@ -98,7 +98,7 @@ export default class AuthToken
 		}
 
 		// Update the cookie expiration time
-		await dbClient.conn
+		await getClient().conn
 			.updateTable('auth_tokens')
 			.set({
 				expires_at: new Date(Date.now() + 3_600_000), // 1 hour of inactivity
@@ -120,7 +120,7 @@ export default class AuthToken
 		const salt = await Secrets.get('hmac_salt');
 		const hashedValidator = Encryptor.hmac(validator, salt!);
 
-		await dbClient.conn
+		await getClient().conn
 			.insertInto('auth_tokens')
 			.values({
 				id,
@@ -139,7 +139,7 @@ export default class AuthToken
 
 	public async delete(): Promise<void>
 	{
-		await dbClient.conn
+		await getClient().conn
 			.deleteFrom('auth_tokens')
 			.where('id', '=', this._id)
 			.execute();

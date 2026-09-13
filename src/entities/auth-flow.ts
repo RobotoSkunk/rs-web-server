@@ -17,7 +17,7 @@
 **/
 
 import {
-	dbClient,
+	getClient,
 } from '../database/client';
 
 import {
@@ -60,7 +60,7 @@ export default class AuthFlow
 		const srpValues = await admin.getSRPValues();
 		const ephemeral = SRP.generateEphemeral(srpValues.verifier);
 
-		const authFlow = await dbClient.conn
+		const authFlow = await getClient().conn
 			.insertInto('auth_flow')
 			.values({
 				admin_id: admin.id,
@@ -79,7 +79,7 @@ export default class AuthFlow
 
 	public static async findAuthFlow(id: string): Promise<AuthFlow | null>
 	{
-		const authFlow = await dbClient.conn
+		const authFlow = await getClient().conn
 			.selectFrom('auth_flow')
 			.select('admin_id')
 			.where('id', '=', id)
@@ -96,7 +96,7 @@ export default class AuthFlow
 	public async verify(clientProof: string): Promise<{ proof: string; verifier: string } | null>
 	{
 		const srpValues = await this.admin.getSRPValues();
-		const ephemerals = (await dbClient.conn
+		const ephemerals = (await getClient().conn
 			.selectFrom('auth_flow')
 			.select([
 				'server_ephemeral_secret',
@@ -131,7 +131,7 @@ export default class AuthFlow
 		const verifier = crypto.getRandomValues(new Uint8Array(32));
 		const hmacKey = await Secrets.get('hmac_salt');
 
-		await dbClient.conn
+		await getClient().conn
 			.updateTable('auth_flow')
 			.set({
 				verifier: Encryptor.hmac(verifier, hmacKey!),
@@ -148,7 +148,7 @@ export default class AuthFlow
 
 	public async validateVerifier(rawVerifier: string): Promise<boolean>
 	{
-		const { verifier } = (await dbClient.conn
+		const { verifier } = (await getClient().conn
 			.selectFrom('auth_flow')
 			.select([
 				'verifier',
@@ -175,7 +175,7 @@ export default class AuthFlow
 
 	public async delete(): Promise<void>
 	{
-		await dbClient.conn
+		await getClient().conn
 			.deleteFrom('auth_flow')
 			.where('id', '=', this._id)
 			.execute();

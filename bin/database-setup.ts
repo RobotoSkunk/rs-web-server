@@ -16,24 +16,19 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 **/
 
-import Database from './connection';
+import './common/sudo';
 
-let dbClient: Database;
+import {
+	input,
+} from '@inquirer/prompts';
 
-export function getClient()
-{
-	if (typeof dbClient === 'undefined') {
-		throw new Error('Database client has not been initialized.');
-	}
+import passwordPrompt from '@inquirer/password';
+import Secrets from '../src/crypto/secrets';
 
-	return dbClient;
-}
+const user = await input({ message: 'Database User: ' });
+const password = await passwordPrompt({ message: 'Database Password: ' });
 
-export function setClient(user: string, password: string)
-{
-	if (typeof dbClient !== 'undefined') {
-		throw new Error('A database client has already been initialized.');
-	}
-
-	dbClient = new Database(user, password);
-}
+await Secrets.loadSecrets({
+	'db.user': Buffer.from(user),
+	'db.password': Buffer.from(password),
+});

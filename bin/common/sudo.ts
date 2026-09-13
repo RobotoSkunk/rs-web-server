@@ -16,24 +16,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 **/
 
-import Database from './connection';
+import {
+	$,
+} from 'bun';
 
-let dbClient: Database;
+const exitCode = (await $`sudo -k -S true`.nothrow()).exitCode;
 
-export function getClient()
-{
-	if (typeof dbClient === 'undefined') {
-		throw new Error('Database client has not been initialized.');
-	}
-
-	return dbClient;
-}
-
-export function setClient(user: string, password: string)
-{
-	if (typeof dbClient !== 'undefined') {
-		throw new Error('A database client has already been initialized.');
-	}
-
-	dbClient = new Database(user, password);
+if (exitCode !== 0) {
+	process.exit(0);
 }

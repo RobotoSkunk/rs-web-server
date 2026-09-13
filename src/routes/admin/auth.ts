@@ -67,7 +67,7 @@ const route = new Elysia({ prefix: '/auth' })
 		if (!admin) {
 			await wait(18, 20);
 
-			const bogusSalt = (await Secrets.get('bogus_salt'))!;
+			const bogusSalt = (await Secrets.get('crypto.bogus_salt'))!;
 			const bogusUuidHash = Encryptor.hmac(body.username + '-uuid', bogusSalt + '-uuid');
 
 			const bogusUuid = [

@@ -17,7 +17,8 @@
 **/
 
 import {
-	dbClient,
+	getClient,
+	setClient,
 } from './database/client';
 
 import {
@@ -37,9 +38,7 @@ const requiredEnvVariables = [
 	'ADMIN_PORT',
 	'DB_NAME',
 	'DB_HOST',
-	'DB_PASSWORD',
 	'DB_PORT',
-	'DB_USER',
 	'SECRET_STORAGE_DIRECTORY',
 ];
 
@@ -70,7 +69,12 @@ try {
 
 // Try to migrate the database
 try {
-	await dbClient.tryMigrateToLatest();
+	const user = await Secrets.get('db.user');
+	const password = await Secrets.get('db.password');
+
+	setClient(user!.toString(), password!.toString());
+
+	await getClient().tryMigrateToLatest();
 } catch (e) {
 	console.error('Fatal error when trying to migrate database.');
 	console.error(e);
