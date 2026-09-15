@@ -16,23 +16,17 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 **/
 
-import {
-	Kysely,
-} from 'kysely';
+export const tableName = 'illustration_alts';
 
-import * as admins from './tables/admins';
-import * as audit_logs from './tables/audit_logs';
-import * as auth_flow from './tables/auth_flow';
-import * as auth_tokens from './tables/auth_tokens';
-import * as illustrations from './tables/illustrations';
-import * as illustration_alts from './tables/illustration_alts';
+export interface DB_IllustrationAlts
+{
+	id?: string;
+	illustration_id?: string;
+	lang?: string;
+	content?: string;
+	description?: string;
+}
 
-export type DatabaseSchemaType =
-	admins.PartialDB &
-	audit_logs.PartialDB &
-	auth_flow.PartialDB &
-	auth_tokens.PartialDB &
-	illustrations.PartialDB &
-	illustration_alts.PartialDB;
-
-export type DatabaseSchema = Kysely<DatabaseSchemaType>;
+export type PartialDB = {
+	[ tableName ]: DB_IllustrationAlts,
+};

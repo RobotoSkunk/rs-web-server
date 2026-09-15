@@ -22,3 +22,4 @@ export * as _20260910T030646012Z from './20260910T030646012Z-authentication-flow
 export * as _20260911T031639056Z from './20260911T031639056Z-remove-unused-columns.ts';
 export * as _20260911T080036616Z from './20260911T080036616Z-audit-logs.ts';
 export * as _20260913T041337460Z from './20260913T041337460Z-admin-management.ts';
+export * as _20260915T001718653Z from './20260915T001718653Z-illustrations.ts';
