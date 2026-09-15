@@ -26,6 +26,7 @@ import {
 } from '@elysia/server-timing';
 
 import Elysia from 'elysia';
+import cors from '@elysia/cors';
 
 import workers from './workers';
 import adminRouter from './routes/admin';
@@ -123,6 +124,7 @@ new Elysia()
 		};
 	})
 	.use(serverTiming())
+	.use(cors())
 	.use(adminRouter)
 	.listen(process.env.ADMIN_PORT!);
 
