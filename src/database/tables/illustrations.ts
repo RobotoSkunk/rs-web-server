@@ -22,7 +22,9 @@ export interface DB_Illustrations
 {
 	id?: string;
 	picture_filename?: string;
+	picture_size?: string;
 	picture_small_filename?: string;
+	picture_small_size?: string;
 	uploaded_at?: Date;
 	created_at?: string;
 }
