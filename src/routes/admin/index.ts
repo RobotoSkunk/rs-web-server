@@ -23,11 +23,21 @@ import {
 import Elysia from 'elysia';
 
 import authRouter from './auth';
+import illustrationsRouter from './illustrations';
+import staticPlugin from '@elysia/static';
 
 
 const adminRouter = new Elysia()
 	.use(authRouter)
 	.use(authTokenModel)
+
+	// v v v v [ Requires Auth Token from here ] v v v v //
+
+	.use(staticPlugin({
+		assets: process.env.ASSETS_DIRECTORY,
+		prefix: '/assets',
+	}))
+
 	.get('/identity', ({ authToken }) =>
 	{
 		return {
@@ -35,6 +45,7 @@ const adminRouter = new Elysia()
 			username: authToken.admin.username,
 		};
 	})
+	.use(illustrationsRouter)
 ;
 
 export default adminRouter;

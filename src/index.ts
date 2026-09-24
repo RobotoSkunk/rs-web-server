@@ -41,6 +41,7 @@ const requiredEnvVariables = [
 	'DB_HOST',
 	'DB_PORT',
 	'SECRET_STORAGE_DIRECTORY',
+	'ASSETS_DIRECTORY',
 ];
 
 const missingEnvVariables: string[] = [];

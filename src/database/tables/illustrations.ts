@@ -18,13 +18,19 @@
 
 export const tableName = 'illustrations';
 
+type Point = {
+	x: number;
+	y: number;
+};
+
 export interface DB_Illustrations
 {
 	id?: string;
 	picture_filename?: string;
-	picture_size?: string;
+	picture_size?: string | Point;
 	picture_small_filename?: string;
-	picture_small_size?: string;
+	picture_small_size?: string | Point;
+	hidden?: boolean;
 	uploaded_at?: Date;
 	created_at?: string;
 }

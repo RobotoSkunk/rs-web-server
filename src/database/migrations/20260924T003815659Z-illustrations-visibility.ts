@@ -16,12 +16,28 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 **/
 
-export * as _20260908T085946944Z from './20260908T085946944Z-init.ts';
-export * as _20260910T002201045Z from './20260910T002201045Z-admin-creation-time.ts';
-export * as _20260910T030646012Z from './20260910T030646012Z-authentication-flow.ts';
-export * as _20260911T031639056Z from './20260911T031639056Z-remove-unused-columns.ts';
-export * as _20260911T080036616Z from './20260911T080036616Z-audit-logs.ts';
-export * as _20260913T041337460Z from './20260913T041337460Z-admin-management.ts';
-export * as _20260915T001718653Z from './20260915T001718653Z-illustrations.ts';
-export * as _20260917T020346411Z from './20260917T020346411Z-illustrations-metadata.ts';
-export * as _20260924T003815659Z from './20260924T003815659Z-illustrations-visibility.ts';
+import {
+	Kysely,
+} from 'kysely';
+
+
+async function up(db: Kysely<unknown>): Promise<void>
+{
+	await db.schema
+		.alterTable('illustrations')
+		.addColumn('hidden', 'boolean', c => c.notNull().defaultTo(true))
+		.execute();
+}
+
+async function down(db: Kysely<unknown>): Promise<void>
+{
+	await db.schema
+		.alterTable('illustrations')
+		.dropColumn('hidden')
+		.execute();
+}
+
+export {
+	up,
+	down,
+};
