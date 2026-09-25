@@ -76,14 +76,40 @@ const route = new Elysia({ prefix: '/illustrations' })
 			.selectFrom('illustrations')
 			.select([
 				'id',
-				'illustrations.picture_small_filename as filename',
+				'picture_small_filename as filename',
 				'picture_small_size as size',
 				'hidden',
 			])
-			.orderBy('uploaded_at')
+			.orderBy('uploaded_at', 'desc')
 			.execute();
 
 		return list;
+	})
+	.get(':id', async ({ params: { id }, status }) =>
+	{
+		const illustration = await getClient().conn
+			.selectFrom('illustrations')
+			.select([
+				'id',
+				'picture_filename as filename',
+				'picture_small_filename as filename_small',
+				'picture_small_size as size',
+				'uploaded_at',
+				'created_at',
+				'hidden',
+			])
+			.where('id', '=', id)
+			.executeTakeFirst();
+
+		if (!illustration) {
+			return status(404, {
+				error: {
+					message: 'Not Found',
+				},
+			});
+		}
+
+		return illustration;
 	})
 	.post('upload', async ({ body, status }) =>
 	{
