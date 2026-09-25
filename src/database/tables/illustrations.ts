@@ -25,7 +25,7 @@ type Point = {
 
 export interface DB_Illustrations
 {
-	id?: string;
+	id?: UUID;
 	picture_filename?: string;
 	picture_size?: string | Point;
 	picture_small_filename?: string;

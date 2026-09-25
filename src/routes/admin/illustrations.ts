@@ -98,7 +98,7 @@ const route = new Elysia({ prefix: '/illustrations' })
 				'created_at',
 				'hidden',
 			])
-			.where('id', '=', id)
+			.where('id', '=', id as UUID)
 			.executeTakeFirst();
 
 		if (!illustration) {
@@ -109,7 +109,124 @@ const route = new Elysia({ prefix: '/illustrations' })
 			});
 		}
 
-		return illustration;
+		const alts = await getClient().conn
+			.selectFrom('illustration_alts')
+			.select([
+				'id',
+				'lang',
+				'content',
+				'description',
+			])
+			.where('illustration_id', '=', illustration.id!)
+			.execute();
+
+		return {
+			...illustration,
+			alts,
+		};
+	}, {
+		params: t.Object({
+			id: t.String({ format: 'uuid' }),
+		}),
+	})
+	.post(':id/alt', async ({ params: { id }, body, status }) =>
+	{
+		try {
+			const illustration = await getClient().conn
+				.selectFrom('illustrations')
+				.select('id')
+				.where('id', '=', id as UUID)
+				.executeTakeFirst();
+
+			if (!illustration) {
+				return status(400, {
+					error: {
+						message: 'The requested illustration ID does not exist.',
+					},
+				});
+			}
+
+			const alt = await getClient().conn
+				.insertInto('illustration_alts')
+				.values({
+					illustration_id: id,
+					lang: body.lang,
+					content: body.content,
+					description: body.description,
+				})
+				.returning('id')
+				.executeTakeFirstOrThrow();
+
+			return {
+				id: alt.id,
+			};
+		} catch (e) {
+			console.error(e);
+			return status(500);
+		}
+	}, {
+		params: t.Object({
+			id: t.String({ format: 'uuid' }),
+		}),
+		body: t.Object({
+			lang: t.String(),
+			content: t.String(),
+			description: t.String(),
+		}),
+	})
+	.delete('/alt/:id', async ({ params: { id } }) =>
+	{
+		await getClient().conn
+			.deleteFrom('illustration_alts')
+			.where('id', '=', id as UUID)
+			.execute();
+
+		return {
+			success: true,
+		};
+	}, {
+		params: t.Object({
+			id: t.String({ format: 'uuid' }),
+		}),
+	})
+	.put('/alt/:id', async ({ params: { id }, body, status }) =>
+	{
+		const alt = await getClient().conn
+			.selectFrom('illustration_alts')
+			.select('id')
+			.where('id', '=', id as UUID)
+			.executeTakeFirst();
+
+		if (!alt) {
+			return status(400, {
+				error: {
+					message: 'The requested alt ID does not exist.',
+				},
+			});
+		}
+
+		await getClient().conn
+			.updateTable('illustration_alts')
+			.set({
+				lang: body.lang,
+				content: body.content,
+				description: body.description,
+			})
+			.where('id', '=', id as UUID)
+			.execute();
+
+		return {
+			success: true,
+		};
+	}, {
+		params: t.Object({
+			id: t.String({ format: 'uuid' }),
+		}),
+		body: t.Partial(t.Object({
+			lang: t.String(),
+			content: t.String(),
+			description: t.String(),
+		})),
 	})
 	.post('upload', async ({ body, status }) =>
 	{

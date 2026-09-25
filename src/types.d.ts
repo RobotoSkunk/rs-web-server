@@ -16,17 +16,4 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 **/
 
-export const tableName = 'illustration_alts';
-
-export interface DB_IllustrationAlts
-{
-	id?: UUID;
-	illustration_id?: string;
-	lang?: string;
-	content?: string;
-	description?: string;
-}
-
-export type PartialDB = {
-	[ tableName ]: DB_IllustrationAlts,
-};
+type UUID = `${string}-${string}-${string}-${string}-${string}`

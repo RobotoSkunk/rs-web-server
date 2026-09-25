@@ -20,7 +20,7 @@ export const tableName = 'admins';
 
 export interface DB_Admins
 {
-	id?: string;
+	id?: UUID;
 	username?: string;
 	password_salt?: string;
 	password_verifier?: string;

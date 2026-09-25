@@ -20,7 +20,7 @@ export const tableName = 'audit_logs';
 
 export interface DB_AuditLogs
 {
-	id?: string;
+	id?: UUID;
 	content?: string;
 	admin_id?: string | null;
 	severity?: number;

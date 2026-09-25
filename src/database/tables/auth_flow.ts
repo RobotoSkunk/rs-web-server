@@ -20,7 +20,7 @@ export const tableName = 'auth_flow';
 
 export interface DB_AuthFlow
 {
-	id?: string;
+	id?: UUID;
 	admin_id?: string;
 	client_ephemeral_public?: string | null;
 	server_ephemeral_secret?: string | null;
