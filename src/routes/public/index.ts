@@ -16,20 +16,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 **/
 
-import {
-	authTokenModel,
-} from '../../models/auth-token';
-
 import Elysia from 'elysia';
 import cors from '@elysia/cors';
 import staticPlugin from '@elysia/static';
-import serverTiming from '@elysia/server-timing';
 
-import authRouter from './auth';
 import illustrationsRouter from './illustrations';
 
 
-const adminRouter = new Elysia()
+const publicRouter = new Elysia()
 	.onError(({ status, code, path, error }) =>
 	{
 		switch (code) {
@@ -65,26 +59,12 @@ const adminRouter = new Elysia()
 			},
 		};
 	})
-	.use(serverTiming())
 	.use(cors())
-	.use(authRouter)
-	.use(authTokenModel)
-
-	// v v v v [ Requires Auth Token from here ] v v v v //
-
 	.use(staticPlugin({
 		assets: process.env.ASSETS_DIRECTORY,
 		prefix: '/assets',
 	}))
-
-	.get('/identity', ({ authToken }) =>
-	{
-		return {
-			id: authToken.admin.id,
-			username: authToken.admin.username,
-		};
-	})
 	.use(illustrationsRouter)
 ;
 
-export default adminRouter;
+export default publicRouter;

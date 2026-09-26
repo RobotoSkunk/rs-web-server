@@ -21,16 +21,13 @@ import {
 	setClient,
 } from './database/client';
 
-import {
-	serverTiming,
-} from '@elysia/server-timing';
-
 import Elysia from 'elysia';
-import cors from '@elysia/cors';
 
 import workers from './workers';
-import adminRouter from './routes/admin';
 import Secrets from './crypto/secrets';
+
+import adminRouter from './routes/admin';
+import publicRouter from './routes/public';
 
 
 // Verify if the required environment variables are present.
@@ -87,46 +84,16 @@ try {
 // Execute workers
 workers();
 
-// Start admin and public API
+// Start admin API
 new Elysia()
-	.onError(({ status, code, path, error }) =>
-	{
-		switch (code) {
-			case 'INTERNAL_SERVER_ERROR': {
-				console.error(path, '\n', error);
-				break;
-			}
-			case 'NOT_FOUND':
-			case 'VALIDATION': {
-				if (code === 'VALIDATION' && process.env.NODE_ENV !== 'production') {
-					console.log(error.detail(error.message));
-				}
-
-				return status(400, {
-					error: {
-						message: `Bad request.`,
-					},
-				});
-			}
-			case 401:
-			case 403: {
-				return status(code, {
-					error: {
-						message: `Unauthorized.`,
-					},
-				});
-			}
-		}
-
-		return {
-			error: {
-				message: `Something went wrong.`,
-			},
-		};
-	})
-	.use(serverTiming())
-	.use(cors())
 	.use(adminRouter)
 	.listen(process.env.ADMIN_PORT!);
 
 console.log(`[${new Date().toISOString()}] Admin API listening on port ${process.env.ADMIN_PORT}.`);
+
+// Start public API
+new Elysia()
+	.use(publicRouter)
+	.listen(process.env.PORT!);
+
+console.log(`[${new Date().toISOString()}] Public API listening on port ${process.env.PORT}.`);
