@@ -32,7 +32,7 @@ export interface DB_Illustrations
 	picture_small_size?: string | Point;
 	hidden?: boolean;
 	uploaded_at?: Date;
-	created_at?: string;
+	created_at?: string | Date;
 }
 
 export type PartialDB = {

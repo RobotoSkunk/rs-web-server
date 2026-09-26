@@ -70,7 +70,9 @@ async function processImage(dataUrl: string)
 
 
 const route = new Elysia({ prefix: '/illustrations' })
-	.get('list', async () =>
+
+	// Illustrations
+	.get('/', async () =>
 	{
 		const list = await getClient().conn
 			.selectFrom('illustrations')
@@ -85,7 +87,62 @@ const route = new Elysia({ prefix: '/illustrations' })
 
 		return list;
 	})
-	.get(':id', async ({ params: { id }, status }) =>
+	.post('/', async ({ body, status }) =>
+	{
+		try {
+			if (body.picture.length > fileLimitSize || body.picture_small.length > fileLimitSize) {
+				return status(413, {
+					error: {
+						message: 'The maximum file size allowed is 10 MiB.',
+					},
+				});
+			}
+
+			const picture = await processImage(body.picture);
+			const pictureSmall = await processImage(body.picture_small);
+
+			if (!picture || !pictureSmall) {
+				return status(400, {
+					error: {
+						message: 'Bad request.',
+					},
+				});
+			}
+
+			await Bun.file(path.join(process.env.ASSETS_DIRECTORY!, picture.filename)).write(picture.buffer);
+			await Bun.file(path.join(process.env.ASSETS_DIRECTORY!, pictureSmall.filename)).write(pictureSmall.buffer);
+
+			const { id } = await getClient().conn
+				.insertInto('illustrations')
+				.values({
+					picture_filename: picture.filename,
+					picture_small_filename: pictureSmall.filename,
+					picture_size: `(${picture.size.x}, ${picture.size.y})`,
+					picture_small_size: `(${pictureSmall.size.x}, ${pictureSmall.size.y})`,
+					created_at: body.created_at,
+					hidden: true,
+				})
+				.returning('id')
+				.executeTakeFirstOrThrow();
+
+			return {
+				success: true,
+				id,
+				filename: pictureSmall.filename,
+				size: pictureSmall.size,
+			}
+		} catch (e) {
+			console.error(e);
+			return status(500);
+		}
+	}, {
+		body: t.Object({
+			picture: t.String(),
+			picture_small: t.String(),
+			created_at: t.String({ format: 'date' }),
+		}),
+	})
+	.get('/:id', async ({ params: { id }, status }) =>
 	{
 		const illustration = await getClient().conn
 			.selectFrom('illustrations')
@@ -122,6 +179,7 @@ const route = new Elysia({ prefix: '/illustrations' })
 
 		return {
 			...illustration,
+			created_at: (illustration.created_at as Date).toISOString().split('T')[0]!,
 			alts,
 		};
 	}, {
@@ -129,7 +187,82 @@ const route = new Elysia({ prefix: '/illustrations' })
 			id: t.String({ format: 'uuid' }),
 		}),
 	})
-	.post(':id/alt', async ({ params: { id }, body, status }) =>
+	.delete('/:id', async ({ params: { id }, status }) =>
+	{
+		const illustration = await getClient().conn
+			.selectFrom('illustrations')
+			.select([
+				'picture_filename',
+				'picture_small_filename',
+			])
+			.where('id', '=', id as UUID)
+			.executeTakeFirst();
+
+		if (!illustration) {
+			return status(400, {
+				error: {
+					message: 'The requested illustration ID does not exist.',
+				},
+			});
+		}
+
+		const dir = process.env.ASSETS_DIRECTORY!;
+		await Bun.file(path.join(dir, illustration.picture_filename!)).delete();
+		await Bun.file(path.join(dir, illustration.picture_small_filename!)).delete();
+
+		await getClient().conn
+			.deleteFrom('illustrations')
+			.where('id', '=', id as UUID)
+			.execute();
+
+		return {
+			success: true,
+		};
+	}, {
+		params: t.Object({
+			id: t.String({ format: 'uuid' }),
+		}),
+	})
+	.patch('/:id', async ({ params: { id }, body, status }) =>
+	{
+		const illustration = await getClient().conn
+			.selectFrom('illustrations')
+			.select('id')
+			.where('id', '=', id as UUID)
+			.executeTakeFirst();
+
+		if (!illustration) {
+			return status(400, {
+				error: {
+					message: 'The requested illustration ID does not exist.',
+				},
+			});
+		}
+
+		await getClient().conn
+			.updateTable('illustrations')
+			.set({
+				hidden: body.hidden,
+				created_at: body.created_at,
+			})
+			.where('id', '=', id as UUID)
+			.execute();
+
+		return {
+			success: true,
+		};
+	}, {
+		params: t.Object({
+			id: t.String({ format: 'uuid' }),
+		}),
+		body: t.Partial(t.Object({
+			hidden: t.Boolean(),
+			created_at: t.String({ format: 'date' }),
+		})),
+	})
+
+	// Alts
+	.post('/:id/alt', async ({ params: { id }, body, status }) =>
 	{
 		try {
 			const illustration = await getClient().conn
@@ -174,8 +307,22 @@ const route = new Elysia({ prefix: '/illustrations' })
 			description: t.String(),
 		}),
 	})
-	.delete('/alt/:id', async ({ params: { id } }) =>
+	.delete('/alt/:id', async ({ params: { id }, status }) =>
 	{
+		const alt = await getClient().conn
+			.selectFrom('illustration_alts')
+			.select('id')
+			.where('id', '=', id as UUID)
+			.executeTakeFirst();
+
+		if (!alt) {
+			return status(400, {
+				error: {
+					message: 'The requested illustration alt ID does not exist.',
+				},
+			});
+		}
+
 		await getClient().conn
 			.deleteFrom('illustration_alts')
 			.where('id', '=', id as UUID)
@@ -189,7 +336,7 @@ const route = new Elysia({ prefix: '/illustrations' })
 			id: t.String({ format: 'uuid' }),
 		}),
 	})
-	.put('/alt/:id', async ({ params: { id }, body, status }) =>
+	.patch('/alt/:id', async ({ params: { id }, body, status }) =>
 	{
 		const alt = await getClient().conn
 			.selectFrom('illustration_alts')
@@ -227,60 +374,6 @@ const route = new Elysia({ prefix: '/illustrations' })
 			content: t.String(),
 			description: t.String(),
 		})),
-	})
-	.post('upload', async ({ body, status }) =>
-	{
-		try {
-			if (body.picture.length > fileLimitSize || body.picture_small.length > fileLimitSize) {
-				return status(413, {
-					error: {
-						message: 'The maximum file size allowed is 10 MiB.',
-					},
-				});
-			}
-
-			const picture = await processImage(body.picture);
-			const pictureSmall = await processImage(body.picture_small);
-
-			if (!picture || !pictureSmall) {
-				return status(400, {
-					error: {
-						message: 'Bad request.',
-					},
-				});
-			}
-
-			await Bun.file(path.join(process.env.ASSETS_DIRECTORY!, picture.filename)).write(picture.buffer);
-			await Bun.file(path.join(process.env.ASSETS_DIRECTORY!, pictureSmall.filename)).write(pictureSmall.buffer);
-
-			const now = new Date();
-
-			const { id } = await getClient().conn
-				.insertInto('illustrations')
-				.values({
-					picture_filename: picture.filename,
-					picture_small_filename: pictureSmall.filename,
-					picture_size: `(${picture.size.x}, ${picture.size.y})`,
-					picture_small_size: `(${pictureSmall.size.x}, ${pictureSmall.size.y})`,
-					created_at: `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`,
-					hidden: true,
-				})
-				.returning('id')
-				.executeTakeFirstOrThrow();
-
-			return {
-				success: true,
-				id,
-			}
-		} catch (e) {
-			console.error(e);
-			return status(500);
-		}
-	}, {
-		body: t.Object({
-			picture: t.String(),
-			picture_small: t.String(),
-		}),
 	})
 ;
 

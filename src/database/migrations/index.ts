@@ -25,3 +25,4 @@ export * as _20260913T041337460Z from './20260913T041337460Z-admin-management.ts
 export * as _20260915T001718653Z from './20260915T001718653Z-illustrations.ts';
 export * as _20260917T020346411Z from './20260917T020346411Z-illustrations-metadata.ts';
 export * as _20260924T003815659Z from './20260924T003815659Z-illustrations-visibility.ts';
+export * as _20260926T005213147Z from './20260926T005213147Z-illustration-alts-cascade.ts';

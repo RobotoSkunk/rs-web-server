@@ -98,10 +98,16 @@ export default class AuthToken
 		}
 
 		// Update the cookie expiration time
+		let newExpirationTime = Date.now() + 3_600_000;
+
+		if (process.env.NODE_ENV === 'development') {
+			newExpirationTime += 82_800_000; // +23 hours of inactivity for development purposes
+		}
+
 		await getClient().conn
 			.updateTable('auth_tokens')
 			.set({
-				expires_at: new Date(Date.now() + 3_600_000), // 1 hour of inactivity
+				expires_at: new Date(newExpirationTime), // 1 hour of inactivity
 			})
 			.where('id', '=', id)
 			.execute();
