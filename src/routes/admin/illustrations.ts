@@ -26,47 +26,10 @@ import {
 } from '../../database/client';
 
 import {
-	loadImage,
-} from '@napi-rs/canvas';
-
-import crypto from 'crypto';
-import path from 'path';
-
-const fileLimitSize = 10 * 1024 * 1024;
-
-async function processImage(dataUrl: string)
-{
-	if (!dataUrl.startsWith('data:image/')) {
-		return false;
-	}
-
-	const split = dataUrl.split(',');
-	
-	if (split.length != 2) {
-		return false;
-	}
-
-	if (!split[0]!.match(/^data:image\/(?:webp|jpeg|png)(?:;base64)?$/)) {
-		return false;
-	}
-
-	const extension = split[0]!.replace('data:image/', '').split(';')[0]!;
-
-	const filename = Buffer.from(crypto.getRandomValues(new Uint8Array(32))).toString('base64url') + `.${extension}`;
-	const buffer = Buffer.from(split[1]!, 'base64');
-
-	const image = await loadImage(dataUrl);
-	await Bun.file(path.join(process.env.ASSETS_DIRECTORY!, filename)).write(buffer);
-
-	return {
-		filename,
-		buffer,
-		size: {
-			x: image.width,
-			y: image.height,
-		},
-	};
-}
+	storeImage,
+	fileLimitSize,
+	deleteImage,
+} from '../../utils/image';
 
 
 const route = new Elysia({ prefix: '/illustrations' })
@@ -98,8 +61,8 @@ const route = new Elysia({ prefix: '/illustrations' })
 				});
 			}
 
-			const picture = await processImage(body.picture);
-			const pictureSmall = await processImage(body.picture_small);
+			const picture = await storeImage(body.picture);
+			const pictureSmall = await storeImage(body.picture_small);
 
 			if (!picture || !pictureSmall) {
 				return status(400, {
@@ -108,9 +71,6 @@ const route = new Elysia({ prefix: '/illustrations' })
 					},
 				});
 			}
-
-			await Bun.file(path.join(process.env.ASSETS_DIRECTORY!, picture.filename)).write(picture.buffer);
-			await Bun.file(path.join(process.env.ASSETS_DIRECTORY!, pictureSmall.filename)).write(pictureSmall.buffer);
 
 			const { id } = await getClient().conn
 				.insertInto('illustrations')
@@ -206,9 +166,8 @@ const route = new Elysia({ prefix: '/illustrations' })
 			});
 		}
 
-		const dir = process.env.ASSETS_DIRECTORY!;
-		await Bun.file(path.join(dir, illustration.picture_filename!)).delete();
-		await Bun.file(path.join(dir, illustration.picture_small_filename!)).delete();
+		await deleteImage(illustration.picture_filename!);
+		await deleteImage(illustration.picture_small_filename!);
 
 		await getClient().conn
 			.deleteFrom('illustrations')
