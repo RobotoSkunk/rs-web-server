@@ -16,18 +16,28 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 **/
 
-export const tableName = 'projects';
+import {
+	Kysely,
+} from 'kysely';
 
-export interface DB_Projects
+
+async function up(db: Kysely<unknown>): Promise<void>
 {
-	id?: UUID;
-	comment: string;
-	icon_filename: string;
-	icon_size: string | Point;
-	position: number;
-	hidden: boolean;
+	await db.schema
+		.alterTable('projects')
+		.addColumn('comment', 'text', c => c.notNull())
+		.execute();
 }
 
-export type PartialDB = {
-	[ tableName ]: DB_Projects,
+async function down(db: Kysely<unknown>): Promise<void>
+{
+	await db.schema
+		.alterTable('projects')
+		.dropColumn('comment')
+		.execute();
+}
+
+export {
+	up,
+	down,
 };

@@ -16,18 +16,38 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 **/
 
-export const tableName = 'projects';
+import {
+	Elysia,
+	t,
+} from 'elysia';
 
-export interface DB_Projects
-{
-	id?: UUID;
-	comment: string;
-	icon_filename: string;
-	icon_size: string | Point;
-	position: number;
-	hidden: boolean;
-}
+import {
+	getClient,
+} from '../../database/client';
 
-export type PartialDB = {
-	[ tableName ]: DB_Projects,
-};
+import {
+	storeImage,
+	fileLimitSize,
+	deleteImage,
+} from '../../utils/image';
+
+
+const route = new Elysia({ prefix: '/projects' })
+	.get('/', async () =>
+	{
+		const list = await getClient().conn
+			.selectFrom('projects')
+			.select([
+				'id',
+				'comment',
+				'icon_filename',
+				'icon_size',
+				'hidden',
+			])
+			.execute();
+
+		return list;
+	})
+;
+
+export default route;

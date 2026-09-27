@@ -27,3 +27,4 @@ export * as _20260917T020346411Z from './20260917T020346411Z-illustrations-metad
 export * as _20260924T003815659Z from './20260924T003815659Z-illustrations-visibility.ts';
 export * as _20260926T005213147Z from './20260926T005213147Z-illustration-alts-cascade.ts';
 export * as _20260927T055318731Z from './20260927T055318731Z-portfolio.ts';
+export * as _20260927T074630721Z from './20260927T074630721Z-project-comment.ts';
