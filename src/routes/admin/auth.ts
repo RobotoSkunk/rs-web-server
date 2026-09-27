@@ -100,7 +100,7 @@ const route = new Elysia({ prefix: '/auth' })
 	{
 		await waitForTheTurtleCrossingTheRoad();
 
-		const authFlow = await AuthFlow.findAuthFlow(body.session_id);
+		const authFlow = await AuthFlow.findAuthFlow(body.session_id as UUID);
 
 		if (!authFlow) {
 			await wait(56, 58);
@@ -139,7 +139,7 @@ const route = new Elysia({ prefix: '/auth' })
 	{
 		await waitForTheTurtleCrossingTheRoad();
 
-		const authFlow = await AuthFlow.findAuthFlow(body.session_id);
+		const authFlow = await AuthFlow.findAuthFlow(body.session_id as UUID);
 
 		if (!authFlow) {
 			await wait(3, 3);

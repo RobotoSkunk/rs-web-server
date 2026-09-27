@@ -21,10 +21,10 @@ export const tableName = 'admins';
 export interface DB_Admins
 {
 	id?: UUID;
-	username?: string;
-	password_salt?: string;
-	password_verifier?: string;
-	totp_key?: string;
+	username: string;
+	password_salt: string;
+	password_verifier: string;
+	totp_key: string;
 	disabled?: boolean;
 	created_at?: Date;
 }

@@ -21,8 +21,8 @@ export const tableName = 'auth_tokens';
 export interface DB_AuthTokens
 {
 	id?: string;
-	validator?: string;
-	admin_id?: string;
+	validator: string;
+	admin_id: UUID;
 	created_at?: Date;
 	expires_at?: Date;
 }

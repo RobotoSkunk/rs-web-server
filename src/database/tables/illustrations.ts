@@ -21,13 +21,13 @@ export const tableName = 'illustrations';
 export interface DB_Illustrations
 {
 	id?: UUID;
-	picture_filename?: string;
-	picture_size?: string | Point;
-	picture_small_filename?: string;
-	picture_small_size?: string | Point;
-	hidden?: boolean;
+	picture_filename: string;
+	picture_size: string | Point;
+	picture_small_filename: string;
+	picture_small_size: string | Point;
+	hidden: boolean;
 	uploaded_at?: Date;
-	created_at?: string | Date;
+	created_at: string | Date;
 }
 
 export type PartialDB = {

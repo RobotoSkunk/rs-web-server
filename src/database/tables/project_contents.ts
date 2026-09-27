@@ -21,10 +21,10 @@ export const tableName = 'project_contents';
 export interface DB_ProjectContents
 {
 	id?: UUID;
-	lang?: string;
-	name?: string;
-	description?: string;
-	project_id?: UUID;
+	lang: string;
+	name: string;
+	description: string;
+	project_id: UUID;
 }
 
 export type PartialDB = {

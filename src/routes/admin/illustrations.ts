@@ -241,7 +241,7 @@ const route = new Elysia({ prefix: '/illustrations' })
 			const alt = await getClient().conn
 				.insertInto('illustration_alts')
 				.values({
-					illustration_id: id,
+					illustration_id: id as UUID,
 					lang: body.lang,
 					content: body.content,
 					description: body.description,

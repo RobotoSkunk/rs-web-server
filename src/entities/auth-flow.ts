@@ -32,10 +32,10 @@ import Secrets from '../crypto/secrets';
 
 export default class AuthFlow
 {
-	private _id: string;
+	private _id: UUID;
 	private _admin: Admin;
 
-	constructor(id: string, admin: Admin)
+	constructor(id: UUID, admin: Admin)
 	{
 		this._id = id;
 		this._admin = admin;
@@ -52,7 +52,7 @@ export default class AuthFlow
 	}
 
 	public static async challenge(admin: Admin, clientEphemeral: string): Promise<{
-		id: string;
+		id: UUID;
 		ephemeral: string;
 		salt: string;
 	}>
@@ -77,7 +77,7 @@ export default class AuthFlow
 		};
 	}
 
-	public static async findAuthFlow(id: string): Promise<AuthFlow | null>
+	public static async findAuthFlow(id: UUID): Promise<AuthFlow | null>
 	{
 		const authFlow = await getClient().conn
 			.selectFrom('auth_flow')

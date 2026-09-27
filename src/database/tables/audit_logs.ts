@@ -21,9 +21,9 @@ export const tableName = 'audit_logs';
 export interface DB_AuditLogs
 {
 	id?: UUID;
-	content?: string;
-	admin_id?: string | null;
-	severity?: number;
+	content: string;
+	admin_id: UUID | null;
+	severity: number;
 	created_at?: Date;
 }
 

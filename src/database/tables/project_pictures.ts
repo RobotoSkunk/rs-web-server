@@ -21,12 +21,12 @@ export const tableName = 'project_pictures';
 export interface DB_ProjectPictures
 {
 	id?: UUID;
-	position?: number;
-	picture_filename?: string;
-	picture_size?: Point;
-	picture_small_filename?: string;
-	picture_small_size?: Point;
-	project_id?: UUID;
+	position: number;
+	picture_filename: string;
+	picture_size: Point;
+	picture_small_filename: string;
+	picture_small_size: Point;
+	project_id: UUID;
 }
 
 export type PartialDB = {

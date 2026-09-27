@@ -27,11 +27,11 @@ import * as OTPLib from 'otplib';
 
 export default class Admin
 {
-	private _id: string;
+	private _id: UUID;
 	private _username: string;
 	private _disabled: boolean;
 
-	constructor(id: string, username: string, disabled: boolean)
+	constructor(id: UUID, username: string, disabled: boolean)
 	{
 		this._id = id;
 		this._username = username;
@@ -72,7 +72,7 @@ export default class Admin
 		return new Admin(adminData.id!, username, adminData.disabled!);
 	}
 
-	public static async findById(id: string): Promise<Admin | null>
+	public static async findById(id: UUID): Promise<Admin | null>
 	{
 		const adminData = await getClient().conn
 			.selectFrom('admins')
@@ -90,7 +90,7 @@ export default class Admin
 		return new Admin(id!, adminData.username!, adminData.disabled!);
 	}
 
-	public static async register(id: string, username: string, salt: string, verifier: string): Promise<string | null>
+	public static async register(id: UUID, username: string, salt: string, verifier: string): Promise<string | null>
 	{
 		const totpSecret = OTPLib.generateSecret();
 		const encryptedTotpKey = await Encryptor.encrypt(totpSecret);

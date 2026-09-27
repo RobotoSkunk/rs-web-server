@@ -21,10 +21,10 @@ export const tableName = 'illustration_alts';
 export interface DB_IllustrationAlts
 {
 	id?: UUID;
-	illustration_id?: string;
-	lang?: string;
-	content?: string;
-	description?: string;
+	illustration_id: UUID;
+	lang: string;
+	content: string;
+	description: string;
 }
 
 export type PartialDB = {

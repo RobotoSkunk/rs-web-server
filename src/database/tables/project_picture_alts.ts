@@ -21,9 +21,9 @@ export const tableName = 'project_picture_alts';
 export interface DB_ProjectPictureAlts
 {
 	id?: UUID;
-	lang?: string;
-	content?: string;
-	project_picture_id?: UUID;
+	lang: string;
+	content: string;
+	project_picture_id: UUID;
 }
 
 export type PartialDB = {

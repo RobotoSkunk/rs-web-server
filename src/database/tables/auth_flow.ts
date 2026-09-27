@@ -21,10 +21,10 @@ export const tableName = 'auth_flow';
 export interface DB_AuthFlow
 {
 	id?: UUID;
-	admin_id?: string;
-	client_ephemeral_public?: string | null;
-	server_ephemeral_secret?: string | null;
-	verifier?: string | null;
+	admin_id: UUID;
+	client_ephemeral_public: string | null;
+	server_ephemeral_secret: string | null;
+	verifier: string | null;
 	expires_at?: Date;
 }
 
