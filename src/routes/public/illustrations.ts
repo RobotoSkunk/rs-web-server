@@ -58,7 +58,7 @@ const route = new Elysia({ prefix: '/illustrations' })
 
 			return list.map((v) => ({
 				...v,
-				created_at: (v.created_at as Date).toISOString().split('T')[0]!
+				created_at: (v.created_at as Date).toISOString().split('T')[0]!,
 			}));
 		} catch (e) {
 			console.error(e);
