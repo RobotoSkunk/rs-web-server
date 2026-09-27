@@ -48,6 +48,56 @@ const route = new Elysia({ prefix: '/projects' })
 
 		return list;
 	})
+	.post('/', async ({ body, status }) =>
+	{
+		if (body.icon.length > fileLimitSize) {
+			return status(413, {
+				error: {
+					message: 'The maximum file size allowed is 10 MiB.',
+				},
+			});
+		}
+
+		const icon = await storeImage(body.icon);
+
+		if (!icon) {
+			return status(400, {
+				error: {
+					message: 'Bad request.',
+				},
+			});
+		}
+
+		const { count } = await getClient().conn
+			.selectFrom('projects')
+			.select(eb => eb.fn.countAll().as('count'))
+			.executeTakeFirstOrThrow();
+
+		const { id } = await getClient().conn
+			.insertInto('projects')
+			.values({
+				position: count as number,
+				comment: body.comment,
+				icon_filename: icon.filename,
+				icon_size: `(${icon.size.x}, ${icon.size.y})`,
+			})
+			.returning('id')
+			.executeTakeFirstOrThrow();
+
+		return {
+			success: true,
+			id,
+			icon: {
+				filename: icon.filename,
+				size: icon.size,
+			},
+		};
+	}, {
+		body: t.Object({
+			comment: t.String(),
+			icon: t.String(),
+		}),
+	})
 ;
 
 export default route;

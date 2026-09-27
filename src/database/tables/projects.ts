@@ -25,7 +25,7 @@ export interface DB_Projects
 	icon_filename: string;
 	icon_size: string | Point;
 	position: number;
-	hidden: boolean;
+	hidden?: boolean;
 }
 
 export type PartialDB = {
