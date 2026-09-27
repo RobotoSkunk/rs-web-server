@@ -26,6 +26,10 @@ import * as auth_flow from './tables/auth_flow';
 import * as auth_tokens from './tables/auth_tokens';
 import * as illustrations from './tables/illustrations';
 import * as illustration_alts from './tables/illustration_alts';
+import * as project_contents from './tables/project_contents';
+import * as project_picture_alts from './tables/project_picture_alts';
+import * as project_pictures from './tables/project_pictures';
+import * as projects from './tables/projects';
 
 export type DatabaseSchemaType =
 	admins.PartialDB &
@@ -33,6 +37,10 @@ export type DatabaseSchemaType =
 	auth_flow.PartialDB &
 	auth_tokens.PartialDB &
 	illustrations.PartialDB &
-	illustration_alts.PartialDB;
+	illustration_alts.PartialDB &
+	project_contents.PartialDB &
+	project_picture_alts.PartialDB &
+	project_pictures.PartialDB &
+	projects.PartialDB;
 
 export type DatabaseSchema = Kysely<DatabaseSchemaType>;

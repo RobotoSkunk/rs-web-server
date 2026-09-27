@@ -16,20 +16,17 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 **/
 
-export const tableName = 'illustrations';
+export const tableName = 'projects';
 
-export interface DB_Illustrations
+export interface DB_Projects
 {
 	id?: UUID;
-	picture_filename?: string;
-	picture_size?: string | Point;
-	picture_small_filename?: string;
-	picture_small_size?: string | Point;
+	icon_filename?: string;
+	icon_size?: string | Point;
+	position?: number;
 	hidden?: boolean;
-	uploaded_at?: Date;
-	created_at?: string | Date;
 }
 
 export type PartialDB = {
-	[ tableName ]: DB_Illustrations,
+	[ tableName ]: DB_Projects,
 };

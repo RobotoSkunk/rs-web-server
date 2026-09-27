@@ -17,3 +17,8 @@
 **/
 
 type UUID = `${string}-${string}-${string}-${string}-${string}`
+
+type Point = {
+	x: number;
+	y: number;
+};
