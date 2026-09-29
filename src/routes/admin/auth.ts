@@ -180,7 +180,6 @@ const route = new Elysia({ prefix: '/auth' })
 			value: authToken,
 			httpOnly: true,
 			sameSite: 'strict',
-			maxAge: 3_600_000,
 		});
 
 		return {
