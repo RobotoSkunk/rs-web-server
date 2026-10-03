@@ -134,6 +134,7 @@ const route = new Elysia({ prefix: '/projects' })
 		const contents = await getClient().conn
 			.selectFrom('project_contents')
 			.select([
+				'id',
 				'lang',
 				'name',
 				'description',
@@ -157,6 +158,76 @@ const route = new Elysia({ prefix: '/projects' })
 				},
 			})),
 			contents,
+		};
+	}, {
+		params: t.Object({
+			id: t.String({ format: 'uuid' }),
+		}),
+	})
+
+	.post('/:id/content', async ({ params: { id }, body, status }) =>
+	{
+		const project = await getClient().conn
+			.selectFrom('projects')
+			.select('id')
+			.where('id', '=', id as UUID)
+			.executeTakeFirst();
+
+		if (!project) {
+			return status(404, {
+				error: {
+					message: 'Not Found',
+				},
+			});
+		}
+
+		const insertResponse = await getClient().conn
+			.insertInto('project_contents')
+			.values({
+				lang: body.lang,
+				name: body.name,
+				description: body.description,
+				project_id: project.id!,
+			})
+			.returning('id')
+			.executeTakeFirstOrThrow();
+
+		return {
+			id: insertResponse.id,
+		};
+	}, {
+		params: t.Object({
+			id: t.String({ format: 'uuid' }),
+		}),
+		body: t.Object({
+			lang: t.String(),
+			name: t.String(),
+			description: t.String(),
+		}),
+	})
+	.delete('/content/:id', async ({ params: { id }, status }) =>
+	{
+		const content = await getClient().conn
+			.selectFrom('project_contents')
+			.select('id')
+			.where('id', '=', id as UUID)
+			.executeTakeFirst();
+
+		if (!content) {
+			return status(404, {
+				error: {
+					message: 'Not Found',
+				},
+			});
+		}
+
+		await getClient().conn
+			.deleteFrom('project_contents')
+			.where('id', '=', id as UUID)
+			.execute();
+
+		return {
+			success: true,
 		};
 	}, {
 		params: t.Object({
