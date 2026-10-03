@@ -205,6 +205,45 @@ const route = new Elysia({ prefix: '/projects' })
 			description: t.String(),
 		}),
 	})
+	.patch('/content/:id', async ({ params: { id }, body, status }) =>
+	{
+		const content = await getClient().conn
+			.selectFrom('project_contents')
+			.select('id')
+			.where('id', '=', id as UUID)
+			.executeTakeFirst();
+
+		if (!content) {
+			return status(404, {
+				error: {
+					message: 'Not Found',
+				},
+			});
+		}
+
+		await getClient().conn
+			.updateTable('project_contents')
+			.set({
+				lang: body.lang,
+				name: body.name,
+				description: body.description,
+			})
+			.where('id', '=', id as UUID)
+			.execute();
+
+		return {
+			success: true,
+		};
+	}, {
+		params: t.Object({
+			id: t.String({ format: 'uuid' }),
+		}),
+		body: t.Partial(t.Object({
+			lang: t.String(),
+			name: t.String(),
+			description: t.String(),
+		})),
+	})
 	.delete('/content/:id', async ({ params: { id }, status }) =>
 	{
 		const content = await getClient().conn
