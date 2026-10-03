@@ -44,6 +44,7 @@ const route = new Elysia({ prefix: '/projects' })
 				'icon_size',
 				'hidden',
 			])
+			.orderBy('position', 'asc')
 			.execute();
 
 		return list;
@@ -96,6 +97,70 @@ const route = new Elysia({ prefix: '/projects' })
 		body: t.Object({
 			comment: t.String(),
 			icon: t.String(),
+		}),
+	})
+	.get('/:id', async ({ params: { id }, status }) =>
+	{
+		const project = await getClient().conn
+			.selectFrom('projects')
+			.select([
+				'comment',
+				'icon_filename',
+				'icon_size',
+				'hidden',
+			])
+			.where('id', '=', id as UUID)
+			.executeTakeFirst();
+
+		if (!project) {
+			return status(404, {
+				error: {
+					message: 'Not Found',
+				},
+			});
+		}
+
+		const pictures = await getClient().conn
+			.selectFrom('project_pictures')
+			.select([
+				'id',
+				'picture_small_filename',
+				'picture_small_size',
+			])
+			.where('project_id', '=', id as UUID)
+			.orderBy('position', 'asc')
+			.execute();
+
+		const contents = await getClient().conn
+			.selectFrom('project_contents')
+			.select([
+				'lang',
+				'name',
+				'description',
+			])
+			.where('project_id', '=', id as UUID)
+			.execute();
+
+		return {
+			comment: project.comment,
+			hidden: project.hidden,
+			icon: {
+				filename: project.icon_filename,
+				size: project.icon_size,
+			},
+			pictures: pictures.map((v) =>
+			({
+				id: v.id,
+				picture: {
+					filename: v.picture_small_filename,
+					size: v.picture_small_size,
+				},
+			})),
+			contents,
+		};
+	}, {
+		params: t.Object({
+			id: t.String({ format: 'uuid' }),
 		}),
 	})
 ;

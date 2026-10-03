@@ -27,6 +27,7 @@ import serverTiming from '@elysia/server-timing';
 
 import authRouter from './auth';
 import illustrationsRouter from './illustrations';
+import projectsRouter from './projects';
 
 
 const adminRouter = new Elysia()
@@ -85,6 +86,7 @@ const adminRouter = new Elysia()
 		};
 	})
 	.use(illustrationsRouter)
+	.use(projectsRouter)
 ;
 
 export default adminRouter;
