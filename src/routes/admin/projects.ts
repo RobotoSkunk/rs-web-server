@@ -65,6 +65,39 @@ const route = new Elysia({ prefix: '/projects' })
 
 		return list;
 	})
+	.post('/order', async ({ body, status }) =>
+	{
+		const { count } = await getClient().conn
+			.selectFrom('projects')
+			.select(({ fn }) => fn.countAll().as('count'))
+			.executeTakeFirstOrThrow();
+
+		if (body.length != count) {
+			return status(400, {
+				error: {
+					message: 'Bad request.',
+				},
+			});
+		}
+
+		for (let i = 0; i < body.length; i++) {
+			await getClient().conn
+				.updateTable('projects')
+				.set({
+					position: i,
+				})
+				.where('id', '=', body[i] as UUID)
+				.execute();
+		}
+
+		return {
+			success: true,
+		};
+	}, {
+		body: t.Array(t.String({ format: 'uuid' })),
+	})
+
+	// Project
 	.post('/', async ({ body, status }) =>
 	{
 		if (body.icon.length > fileLimitSize) {
@@ -405,7 +438,7 @@ const route = new Elysia({ prefix: '/projects' })
 			picture_small: t.String(),
 		}),
 	})
-	.delete('/picture/:id', async ({ params: { id }, body, status }) =>
+	.delete('/picture/:id', async ({ params: { id }, status }) =>
 	{
 		const projectPicture = await getClient().conn
 			.selectFrom('project_pictures')
@@ -440,6 +473,37 @@ const route = new Elysia({ prefix: '/projects' })
 		params: t.Object({
 			id: t.String({ format: 'uuid' }),
 		}),
+	})
+	.post('/picture/order', async ({ body, status }) =>
+	{
+		const { count } = await getClient().conn
+			.selectFrom('project_pictures')
+			.select(({ fn }) => fn.countAll().as('count'))
+			.executeTakeFirstOrThrow();
+
+		if (body.length != count) {
+			return status(400, {
+				error: {
+					message: 'Bad request.',
+				},
+			});
+		}
+
+		for (let i = 0; i < body.length; i++) {
+			await getClient().conn
+				.updateTable('project_pictures')
+				.set({
+					position: i,
+				})
+				.where('id', '=', body[i] as UUID)
+				.execute();
+		}
+
+		return {
+			success: true,
+		};
+	}, {
+		body: t.Array(t.String({ format: 'uuid' })),
 	})
 
 	// Picture alts
@@ -518,7 +582,7 @@ const route = new Elysia({ prefix: '/projects' })
 			content: t.String(),
 		})),
 	})
-	.delete('/picture/alt/:id', async ({ params: { id }, body, status }) =>
+	.delete('/picture/alt/:id', async ({ params: { id }, status }) =>
 	{
 		const pictureAlt = await getClient().conn
 			.selectFrom('project_picture_alts')
