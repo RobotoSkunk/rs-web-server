@@ -268,6 +268,37 @@ const route = new Elysia({ prefix: '/projects' })
 			hidden: t.Boolean(),
 		})),
 	})
+	.delete('/:id', async ({ params: { id }, status }) =>
+	{
+		const project = await getClient().conn
+			.selectFrom('projects')
+			.select([
+				'id',
+			])
+			.where('id', '=', id as UUID)
+			.executeTakeFirst();
+
+		if (!project) {
+			return status(404, {
+				error: {
+					message: 'Not Found',
+				},
+			});
+		}
+
+		await getClient().conn
+			.deleteFrom('projects')
+			.where('id', '=', id as UUID)
+			.execute();
+
+		return {
+			success: true,
+		};
+	}, {
+		params: t.Object({
+			id: t.String({ format: 'uuid' }),
+		}),
+	})
 
 	// Content
 	.post('/:id/content', async ({ params: { id }, body, status }) =>
