@@ -23,9 +23,9 @@ export interface DB_ProjectPictures
 	id?: UUID;
 	position: number;
 	picture_filename: string;
-	picture_size: Point;
+	picture_size: string | Point;
 	picture_small_filename: string;
-	picture_small_size: Point;
+	picture_small_size: string | Point;
 	project_id: UUID;
 }
 

@@ -32,6 +32,22 @@ import {
 } from '../../utils/image';
 
 
+type Picture = {
+	id: string;
+	picture: {
+		filename: string;
+		size: {
+			x: number;
+			y: number;
+		};
+	};
+	alts: {
+		id?: UUID;
+		lang: string;
+		content: string;
+	}[];
+};
+
 const route = new Elysia({ prefix: '/projects' })
 	.get('/', async () =>
 	{
@@ -131,6 +147,29 @@ const route = new Elysia({ prefix: '/projects' })
 			.orderBy('position', 'asc')
 			.execute();
 
+		const picturesToSend: Picture[] = [];
+
+		for (const picture of pictures) {
+			const alts = await getClient().conn
+				.selectFrom('project_picture_alts')
+				.select([
+					'id',
+					'lang',
+					'content',
+				])
+				.where('project_picture_id', '=', picture.id!)
+				.execute();
+
+			picturesToSend.push({
+				id: picture.id!,
+				picture: {
+					filename: picture.picture_small_filename,
+					size: picture.picture_small_size as Point,
+				},
+				alts,
+			});
+		}
+
 		const contents = await getClient().conn
 			.selectFrom('project_contents')
 			.select([
@@ -149,20 +188,52 @@ const route = new Elysia({ prefix: '/projects' })
 				filename: project.icon_filename,
 				size: project.icon_size,
 			},
-			pictures: pictures.map((v) =>
-			({
-				id: v.id,
-				picture: {
-					filename: v.picture_small_filename,
-					size: v.picture_small_size,
-				},
-			})),
+			pictures: picturesToSend,
 			contents,
 		};
 	}, {
 		params: t.Object({
 			id: t.String({ format: 'uuid' }),
 		}),
+	})
+	.patch('/:id', async ({ params: { id }, body, status }) =>
+	{
+		const project = await getClient().conn
+			.selectFrom('projects')
+			.select([
+				'id',
+			])
+			.where('id', '=', id as UUID)
+			.executeTakeFirst();
+
+		if (!project) {
+			return status(404, {
+				error: {
+					message: 'Not Found',
+				},
+			});
+		}
+
+		await getClient().conn
+			.updateTable('projects')
+			.set({
+				comment: body.comment,
+				hidden: body.hidden,
+			})
+			.where('id', '=', id as UUID)
+			.execute();
+
+		return {
+			success: true,
+		};
+	}, {
+		params: t.Object({
+			id: t.String({ format: 'uuid' }),
+		}),
+		body: t.Partial(t.Object({
+			comment: t.String(),
+			hidden: t.Boolean(),
+		})),
 	})
 
 	.post('/:id/content', async ({ params: { id }, body, status }) =>
@@ -263,6 +334,199 @@ const route = new Elysia({ prefix: '/projects' })
 		await getClient().conn
 			.deleteFrom('project_contents')
 			.where('id', '=', id as UUID)
+			.execute();
+
+		return {
+			success: true,
+		};
+	}, {
+		params: t.Object({
+			id: t.String({ format: 'uuid' }),
+		}),
+	})
+
+	.post('/:id/picture', async ({ params: { id }, body, status }) =>
+	{
+		const project = await getClient().conn
+			.selectFrom('projects')
+			.select('id')
+			.where('id', '=', id as UUID)
+			.executeTakeFirst();
+
+		if (!project) {
+			return status(404, {
+				error: {
+					message: 'Not Found',
+				},
+			});
+		}
+
+		const picture = await storeImage(body.picture);
+		const pictureSmall = await storeImage(body.picture_small);
+
+		if (!picture || !pictureSmall) {
+			return status(400, {
+				error: {
+					message: 'Bad request.',
+				},
+			});
+		}
+
+		const { count } = await getClient().conn
+			.selectFrom('project_pictures')
+			.select(({ fn }) => fn.countAll().as('count'))
+			.where('project_id', '=', project.id!)
+			.executeTakeFirstOrThrow();
+
+		const insertResponse = await getClient().conn
+			.insertInto('project_pictures')
+			.values({
+				picture_filename: picture.filename,
+				picture_size: `(${picture.size.x},${picture.size.y})`,
+				picture_small_filename: picture.filename,
+				picture_small_size: `(${pictureSmall.size.x},${pictureSmall.size.y})`,
+				position: count as number,
+				project_id: project.id!,
+			})
+			.returning('id')
+			.executeTakeFirstOrThrow();
+
+		return {
+			id: insertResponse.id,
+		};
+	}, {
+		params: t.Object({
+			id: t.String({ format: 'uuid' }),
+		}),
+		body: t.Object({
+			picture: t.String(),
+			picture_small: t.String(),
+		}),
+	})
+	.delete('/picture/:id', async ({ params: { id }, body, status }) =>
+	{
+		const projectPicture = await getClient().conn
+			.selectFrom('project_pictures')
+			.select('id')
+			.where('id', '=', id as UUID)
+			.executeTakeFirst();
+
+		if (!projectPicture) {
+			return status(404, {
+				error: {
+					message: 'Not Found',
+				},
+			});
+		}
+
+		await getClient().conn
+			.deleteFrom('project_pictures')
+			.where('id', '=', projectPicture.id!)
+			.execute();
+
+		return {
+			success: true,
+		};
+	}, {
+		params: t.Object({
+			id: t.String({ format: 'uuid' }),
+		}),
+	})
+
+	.post('/picture/:id/alt', async ({ params: { id }, body, status }) =>
+	{
+		const projectPicture = await getClient().conn
+			.selectFrom('project_pictures')
+			.select('id')
+			.where('id', '=', id as UUID)
+			.executeTakeFirst();
+
+		if (!projectPicture) {
+			return status(404, {
+				error: {
+					message: 'Not Found',
+				},
+			});
+		}
+
+		const insertResponse = await getClient().conn
+			.insertInto('project_picture_alts')
+			.values({
+				lang: body.lang,
+				content: body.content,
+				project_picture_id: projectPicture.id!,
+			})
+			.returning('id')
+			.executeTakeFirstOrThrow();
+
+		return {
+			id: insertResponse.id,
+		};
+	}, {
+		params: t.Object({
+			id: t.String({ format: 'uuid' }),
+		}),
+		body: t.Object({
+			lang: t.String(),
+			content: t.String(),
+		}),
+	})
+	.patch('/picture/alt/:id', async ({ params: { id }, body, status }) =>
+	{
+		const pictureAlt = await getClient().conn
+			.selectFrom('project_picture_alts')
+			.select('id')
+			.where('id', '=', id as UUID)
+			.executeTakeFirst();
+
+		if (!pictureAlt) {
+			return status(404, {
+				error: {
+					message: 'Not Found',
+				},
+			});
+		}
+
+		await getClient().conn
+			.updateTable('project_picture_alts')
+			.set({
+				lang: body.lang,
+				content: body.content,
+			})
+			.where('id', '=', pictureAlt.id!)
+			.executeTakeFirstOrThrow();
+
+		return {
+			success: true
+		};
+	}, {
+		params: t.Object({
+			id: t.String({ format: 'uuid' }),
+		}),
+		body: t.Partial(t.Object({
+			lang: t.String(),
+			content: t.String(),
+		})),
+	})
+	.delete('/picture/alt/:id', async ({ params: { id }, body, status }) =>
+	{
+		const pictureAlt = await getClient().conn
+			.selectFrom('project_picture_alts')
+			.select('id')
+			.where('id', '=', id as UUID)
+			.executeTakeFirst();
+
+		if (!pictureAlt) {
+			return status(404, {
+				error: {
+					message: 'Not Found',
+				},
+			});
+		}
+
+		await getClient().conn
+			.deleteFrom('project_picture_alts')
+			.where('id', '=', pictureAlt.id!)
 			.execute();
 
 		return {
