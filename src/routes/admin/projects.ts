@@ -52,7 +52,7 @@ const route = new Elysia({ prefix: '/projects' })
 	.get('/', async () =>
 	{
 		const list = await getClient().conn
-			.selectFrom([ 'projects', 'project_contents' ])
+			.selectFrom('projects')
 			.select(eb => [
 				'projects.id as id',
 				'projects.comment as comment',
@@ -65,7 +65,6 @@ const route = new Elysia({ prefix: '/projects' })
 					.select(eb2 => eb2.fn.jsonAgg('project_contents.lang').as('lang'))
 					.as('languages'),
 			])
-			.groupBy('projects.id')
 			.orderBy('projects.position', 'asc')
 			.execute();
 
@@ -284,6 +283,7 @@ const route = new Elysia({ prefix: '/projects' })
 			.selectFrom('projects')
 			.select([
 				'id',
+				'icon_filename',
 			])
 			.where('id', '=', id as UUID)
 			.executeTakeFirst();
@@ -296,10 +296,26 @@ const route = new Elysia({ prefix: '/projects' })
 			});
 		}
 
+		const pictures = await getClient().conn
+			.selectFrom('project_pictures')
+			.select([
+				'picture_filename',
+				'picture_small_filename',
+			])
+			.where('project_id', '=', id as UUID)
+			.execute();
+
 		await getClient().conn
 			.deleteFrom('projects')
 			.where('id', '=', id as UUID)
 			.execute();
+
+		await deleteImage(project.icon_filename);
+
+		for (const picture of pictures) {
+			await deleteImage(picture.picture_filename);
+			await deleteImage(picture.picture_small_filename);
+		}
 
 		return {
 			success: true,
