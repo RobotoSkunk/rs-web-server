@@ -236,6 +236,7 @@ const route = new Elysia({ prefix: '/projects' })
 		})),
 	})
 
+	// Content
 	.post('/:id/content', async ({ params: { id }, body, status }) =>
 	{
 		const project = await getClient().conn
@@ -345,6 +346,7 @@ const route = new Elysia({ prefix: '/projects' })
 		}),
 	})
 
+	// Pictures
 	.post('/:id/picture', async ({ params: { id }, body, status }) =>
 	{
 		const project = await getClient().conn
@@ -383,7 +385,7 @@ const route = new Elysia({ prefix: '/projects' })
 			.values({
 				picture_filename: picture.filename,
 				picture_size: `(${picture.size.x},${picture.size.y})`,
-				picture_small_filename: picture.filename,
+				picture_small_filename: pictureSmall.filename,
 				picture_small_size: `(${pictureSmall.size.x},${pictureSmall.size.y})`,
 				position: count as number,
 				project_id: project.id!,
@@ -407,7 +409,11 @@ const route = new Elysia({ prefix: '/projects' })
 	{
 		const projectPicture = await getClient().conn
 			.selectFrom('project_pictures')
-			.select('id')
+			.select([
+				'id',
+				'picture_filename',
+				'picture_small_filename',
+			])
 			.where('id', '=', id as UUID)
 			.executeTakeFirst();
 
@@ -418,6 +424,9 @@ const route = new Elysia({ prefix: '/projects' })
 				},
 			});
 		}
+
+		await deleteImage(projectPicture.picture_filename);
+		await deleteImage(projectPicture.picture_small_filename);
 
 		await getClient().conn
 			.deleteFrom('project_pictures')
@@ -433,6 +442,7 @@ const route = new Elysia({ prefix: '/projects' })
 		}),
 	})
 
+	// Picture alts
 	.post('/picture/:id/alt', async ({ params: { id }, body, status }) =>
 	{
 		const projectPicture = await getClient().conn
