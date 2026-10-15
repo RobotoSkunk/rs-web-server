@@ -34,10 +34,6 @@ const adminRouter = new Elysia()
 	.onError(({ status, code, path, error }) =>
 	{
 		switch (code) {
-			case 'INTERNAL_SERVER_ERROR': {
-				console.error(path, '\n', error);
-				break;
-			}
 			case 'NOT_FOUND':
 			case 'VALIDATION': {
 				if (code === 'VALIDATION' && process.env.NODE_ENV !== 'production') {
@@ -57,6 +53,10 @@ const adminRouter = new Elysia()
 						message: `Unauthorized.`,
 					},
 				});
+			}
+			default: {
+				console.error(path, '\n', error);
+				break;
 			}
 		}
 

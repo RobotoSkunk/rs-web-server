@@ -52,18 +52,28 @@ const route = new Elysia({ prefix: '/projects' })
 	.get('/', async () =>
 	{
 		const list = await getClient().conn
-			.selectFrom('projects')
-			.select([
-				'id',
-				'comment',
-				'icon_filename',
-				'icon_size',
-				'hidden',
+			.selectFrom([ 'projects', 'project_contents' ])
+			.select(eb => [
+				'projects.id as id',
+				'projects.comment as comment',
+				'projects.icon_filename as icon_filename',
+				'projects.icon_size as icon_size',
+				'projects.hidden as hidden',
+
+				eb.selectFrom('project_contents')
+					.whereRef('projects.id' , '=', 'project_contents.project_id')
+					.select(eb2 => eb2.fn.jsonAgg('project_contents.lang').as('lang'))
+					.as('languages'),
 			])
-			.orderBy('position', 'asc')
+			.groupBy('projects.id')
+			.orderBy('projects.position', 'asc')
 			.execute();
 
-		return list;
+		return list.map((entry) =>
+		({
+			...entry,
+			languages: entry.languages ?? [],
+		}));
 	})
 	.post('/order', async ({ body, status }) =>
 	{
