@@ -21,6 +21,7 @@ import cors from '@elysia/cors';
 import staticPlugin from '@elysia/static';
 
 import illustrationsRouter from './illustrations';
+import projectsRouter from './projects';
 
 
 const publicRouter = new Elysia()
@@ -60,11 +61,12 @@ const publicRouter = new Elysia()
 		};
 	})
 	.use(cors())
+	.use(illustrationsRouter)
+	.use(projectsRouter)
 	.use(staticPlugin({
 		assets: process.env.ASSETS_DIRECTORY,
 		prefix: '/assets',
 	}))
-	.use(illustrationsRouter)
 ;
 
 export default publicRouter;
