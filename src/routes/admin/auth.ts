@@ -56,8 +56,6 @@ const route = new Elysia({ prefix: '/auth' })
 	})
 	.post('challenge', async ({ body }) =>
 	{
-		await waitForTheTurtleCrossingTheRoad();
-
 		const admin = await Admin.findByUsername(body.username);
 
 		if (!admin || (admin && admin.disabled)) {
@@ -98,12 +96,11 @@ const route = new Elysia({ prefix: '/auth' })
 	})
 	.post('verify', async ({ body, status }) =>
 	{
-		await waitForTheTurtleCrossingTheRoad();
-
 		const authFlow = await AuthFlow.findAuthFlow(body.session_id as UUID);
 
 		if (!authFlow) {
 			await wait(56, 58);
+			await waitForTheTurtleCrossingTheRoad();
 
 			return status(401, {
 				error: {
@@ -115,6 +112,7 @@ const route = new Elysia({ prefix: '/auth' })
 		const response = await authFlow.verify(body.session_proof);
 
 		if (!response) {
+			await waitForTheTurtleCrossingTheRoad();
 			await authFlow.delete();
 
 			return status(401, {
@@ -137,12 +135,11 @@ const route = new Elysia({ prefix: '/auth' })
 	})
 	.post('authenticate', async ({ body, cookie: { auth_token }, status }) =>
 	{
-		await waitForTheTurtleCrossingTheRoad();
-
 		const authFlow = await AuthFlow.findAuthFlow(body.session_id as UUID);
 
 		if (!authFlow) {
 			await wait(3, 3);
+			await waitForTheTurtleCrossingTheRoad();
 
 			return status(401, {
 				error: {
@@ -154,6 +151,7 @@ const route = new Elysia({ prefix: '/auth' })
 		const verifierIsValid = await authFlow.validateVerifier(body.verifier);
 
 		if (!verifierIsValid) {
+			await waitForTheTurtleCrossingTheRoad();
 			return status(401, {
 				error: {
 					message: 'Invalid TOTP token.',
@@ -164,6 +162,7 @@ const route = new Elysia({ prefix: '/auth' })
 		const totpEquals = await authFlow.admin.validateTotp(body.totp_token);
 
 		if (!totpEquals.valid) {
+			await waitForTheTurtleCrossingTheRoad();
 			return status(401, {
 				error: {
 					message: 'Invalid TOTP token.',
