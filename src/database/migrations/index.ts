@@ -28,3 +28,4 @@ export * as _20260924T003815659Z from './20260924T003815659Z-illustrations-visib
 export * as _20260926T005213147Z from './20260926T005213147Z-illustration-alts-cascade.ts';
 export * as _20260927T055318731Z from './20260927T055318731Z-portfolio.ts';
 export * as _20260927T074630721Z from './20260927T074630721Z-project-comment.ts';
+export * as _20261023T055910170Z from './20261023T055910170Z-blogging.ts';
