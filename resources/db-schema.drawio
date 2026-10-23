@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="9qcX9bHkrLwHToHH7D9-" name="Page-1">
-        <mxGraphModel dx="1608" dy="860" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+        <mxGraphModel dx="502" dy="681" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -926,7 +926,7 @@
                 <mxCell id="308" style="edgeStyle=none;html=1;entryX=1.012;entryY=0.156;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="306" target="70">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="306" value="UUIDv7" style="shape=note;size=13;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                <mxCell id="306" value="SERIAL" style="shape=note;size=13;whiteSpace=wrap;html=1;" vertex="1" parent="1">
                     <mxGeometry x="1100" y="20" width="80" height="60" as="geometry"/>
                 </mxCell>
                 <mxCell id="309" value="BlogTags" style="shape=table;startSize=30;container=1;collapsible=1;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;" vertex="1" parent="1">
