@@ -22,8 +22,10 @@ export interface DB_BlogContentPictures
 {
 	id?: BigInt | number | string;
 	blog_content_id: number;
-	thumbnail_filename?: string | null;
-	thumbnail_size?: Point | null;
+	picture_filename?: string | null;
+	picture_size?: Point | null;
+	picture_small_filename?: string | null;
+	picture_small_size?: Point | null;
 	alt: string;
 }
 

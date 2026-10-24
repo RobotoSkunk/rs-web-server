@@ -29,3 +29,4 @@ export * as _20260926T005213147Z from './20260926T005213147Z-illustration-alts-c
 export * as _20260927T055318731Z from './20260927T055318731Z-portfolio.ts';
 export * as _20260927T074630721Z from './20260927T074630721Z-project-comment.ts';
 export * as _20261023T055910170Z from './20261023T055910170Z-blogging.ts';
+export * as _20261024T033011784Z from './20261024T033011784Z-fix-blog-pictures.ts';
