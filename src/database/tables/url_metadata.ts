@@ -16,9 +16,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 **/
 
-export const tableName = 'blog_tag_localizations';
+export const tableName = 'url_metadata';
 
-export interface DB_BlogTagLocalizations
+export interface DB_UrlMetadata
 {
 	url: string;
 	site: string;
@@ -30,5 +30,5 @@ export interface DB_BlogTagLocalizations
 }
 
 export type PartialDB = {
-	[ tableName ]: DB_BlogTagLocalizations,
+	[ tableName ]: DB_UrlMetadata,
 };
