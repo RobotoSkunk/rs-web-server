@@ -28,9 +28,9 @@ export interface DB_BlogContents
 	content: string;
 	thumbnail_filename?: string | null;
 	thumbnail_size?: Point | null;
-	created_at: Date;
+	created_at?: Date | null;
 	updated_at?: Date | null;
-	hidden: boolean;
+	hidden?: boolean;
 }
 
 export type PartialDB = {
