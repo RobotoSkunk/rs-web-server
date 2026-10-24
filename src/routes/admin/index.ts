@@ -26,6 +26,7 @@ import staticPlugin from '@elysia/static';
 import serverTiming from '@elysia/server-timing';
 
 import authRouter from './auth';
+import blogsRouter from './blogs';
 import illustrationsRouter from './illustrations';
 import projectsRouter from './projects';
 
@@ -85,6 +86,7 @@ const adminRouter = new Elysia()
 			username: authToken.admin.username,
 		};
 	})
+	.use(blogsRouter)
 	.use(illustrationsRouter)
 	.use(projectsRouter)
 ;
