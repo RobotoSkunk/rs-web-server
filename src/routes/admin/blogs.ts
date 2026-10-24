@@ -40,7 +40,145 @@ const route = new Elysia({ prefix: '/blogs' })
 	// Blogs
 	.get('/', async () =>
 	{
-		return [ ];
+		const blogs = await getClient().conn
+			.selectFrom('blogs')
+			.select(({ selectFrom }) =>
+			[
+				'id',
+				'comment',
+				'hidden',
+
+				selectFrom('blog_contents')
+					.whereRef('blogs.id' , '=', 'blog_contents.blog_id')
+					.select(({ fn }) => fn.jsonAgg('blog_contents.lang').as('lang'))
+					.as('languages'),
+			])
+			.execute();
+
+		return blogs.map((entry) =>
+		({
+			...entry,
+			languages: entry.languages ?? [],
+		}));
+	})
+	.get('/:id', async ({ params: { id }, status }) =>
+	{
+		const blog = await getClient().conn
+			.selectFrom('blogs')
+			.selectAll()
+			.executeTakeFirst();
+
+		if (!blog) {
+			return status(404, {
+				error: {
+					message: 'Not Found',
+				},
+			});
+		}
+
+		const tags = await getClient().conn
+			.selectFrom([ 'blog_tags', 'blog_tag_relationship' ])
+			.select([
+				'blog_tags.id as id',
+				'blog_tags.comment as comment',
+			])
+			.whereRef('blog_tags.id', '=', 'blog_tag_relationship.tag_id')
+			.where('blog_id', '=', id)
+			.execute();
+
+		return {
+			...blog,
+			tags,
+		};
+	}, {
+		params: t.Object({
+			id: t.Number(),
+		}),
+	})
+	.post('/', async ({ body }) =>
+	{
+		const blog = await getClient().conn
+			.insertInto('blogs')
+			.values({
+				comment: body.comment,
+				hidden: true,
+			})
+			.returning('id')
+			.executeTakeFirstOrThrow();
+
+		return {
+			success: true,
+			id: blog.id,
+		};
+	}, {
+		body: t.Object({
+			comment: t.String(),
+		}),
+	})
+	.patch('/:id', async ({ params: { id }, body, status }) =>
+	{
+		const blog = await getClient().conn
+			.selectFrom('blogs')
+			.select('id')
+			.where('id', '=', id)
+			.executeTakeFirstOrThrow();
+
+		if (!blog) {
+			return status(404, {
+				error: {
+					message: 'Not Found',
+				},
+			});
+		}
+
+		await getClient().conn
+			.updateTable('blogs')
+			.set({
+				comment: body.comment,
+			})
+			.returning('id')
+			.executeTakeFirstOrThrow();
+
+		return {
+			success: true,
+			id: blog.id,
+		};
+	}, {
+		params: t.Object({
+			id: t.Number(),
+		}),
+		body: t.Object({
+			comment: t.String(),
+		}),
+	})
+	.delete('/:id', async ({ params: { id }, status }) =>
+	{
+		const blog = await getClient().conn
+			.selectFrom('blogs')
+			.select('id')
+			.where('id', '=', id)
+			.executeTakeFirstOrThrow();
+
+		if (!blog) {
+			return status(404, {
+				error: {
+					message: 'Not Found',
+				},
+			});
+		}
+
+		await getClient().conn
+			.deleteFrom('blogs')
+			.where('id', '=', id)
+			.execute();
+
+		return {
+			success: true,
+		};
+	}, {
+		params: t.Object({
+			id: t.Number(),
+		}),
 	})
 ;
 
