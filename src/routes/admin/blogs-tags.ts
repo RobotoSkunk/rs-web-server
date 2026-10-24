@@ -58,14 +58,14 @@ const route = new Elysia({ prefix: '/tags' })
 
 		return response;
 	})
-	.post('/', async ({ body, status }) =>
+	.post('/', async ({ body }) =>
 	{
 		const tag = await getClient().conn
 			.insertInto('blog_tags')
 			.values({
 				comment: body.comment,
 			})
-			.returning('id')
+			.returningAll()
 			.executeTakeFirstOrThrow();
 
 		const langs: {
@@ -82,13 +82,22 @@ const route = new Elysia({ prefix: '/tags' })
 			});
 		}
 
-		await getClient().conn
+		const insertedLangs = await getClient().conn
 			.insertInto('blog_tag_localizations')
 			.values(langs)
+			.returning([
+				'id',
+				'lang',
+				'content',
+			])
 			.execute();
 
 		return {
 			success: true,
+			tag: {
+				...tag,
+				languages: insertedLangs,
+			}
 		};
 	}, {
 		body: t.Object({
@@ -99,12 +108,12 @@ const route = new Elysia({ prefix: '/tags' })
 			})),
 		}),
 	})
-	.patch('/:id', async ({ params, body, status }) =>
+	.patch('/:id', async ({ params: { id }, body, status }) =>
 	{
 		const tag = await getClient().conn
 			.selectFrom('blog_tags')
 			.select('id')
-			.where('id', '=', params.id)
+			.where('id', '=', id)
 			.executeTakeFirstOrThrow();
 
 		if (!tag) {
@@ -120,7 +129,7 @@ const route = new Elysia({ prefix: '/tags' })
 			.set({
 				comment: body.comment,
 			})
-			.where('id', '=', params.id)
+			.where('id', '=', id)
 			.execute();
 
 		return {
@@ -134,12 +143,12 @@ const route = new Elysia({ prefix: '/tags' })
 			comment: t.String(),
 		}),
 	})
-	.delete('/:id', async ({ params, status }) =>
+	.delete('/:id', async ({ params: { id }, status }) =>
 	{
 		const tag = await getClient().conn
 			.selectFrom('blog_tags')
 			.select('id')
-			.where('id', '=', params.id)
+			.where('id', '=', id)
 			.executeTakeFirstOrThrow();
 
 		if (!tag) {
@@ -152,7 +161,113 @@ const route = new Elysia({ prefix: '/tags' })
 
 		await getClient().conn
 			.deleteFrom('blog_tags')
-			.where('id', '=', params.id)
+			.where('id', '=', id)
+			.execute();
+
+		return {
+			success: true,
+		};
+	}, {
+		params: t.Object({
+			id: t.Number(),
+		}),
+	})
+
+	.post('/:id/lang', async ({ params: { id }, body, status }) =>
+	{
+		const tag = await getClient().conn
+			.selectFrom('blog_tags')
+			.select('id')
+			.where('id', '=', id)
+			.executeTakeFirstOrThrow();
+
+		if (!tag) {
+			return status(404, {
+				error: {
+					message: 'Not Found',
+				},
+			});
+		}
+
+		const locale = await getClient().conn
+			.insertInto('blog_tag_localizations')
+			.values({
+				lang: body.lang,
+				content: body.content,
+				tag_id: id,
+			})
+			.returning('id')
+			.executeTakeFirstOrThrow();
+
+		return {
+			success: true,
+			id: locale.id,
+		};
+	}, {
+		params: t.Object({
+			id: t.Number(),
+		}),
+		body: t.Object({
+			lang: t.String(),
+			content: t.String(),
+		}),
+	})
+	.patch('/lang/:id', async ({ params: { id }, body, status }) =>
+	{
+		const tag = await getClient().conn
+			.selectFrom('blog_tag_localizations')
+			.select('id')
+			.where('id', '=', id)
+			.executeTakeFirstOrThrow();
+
+		if (!tag) {
+			return status(404, {
+				error: {
+					message: 'Not Found',
+				},
+			});
+		}
+
+		await getClient().conn
+			.updateTable('blog_tag_localizations')
+			.set({
+				lang: body.lang,
+				content: body.content,
+			})
+			.where('id', '=', id)
+			.execute();
+
+		return {
+			success: true,
+		};
+	}, {
+		params: t.Object({
+			id: t.Number(),
+		}),
+		body: t.Partial(t.Object({
+			lang: t.String(),
+			content: t.String(),
+		})),
+	})
+	.delete('/lang/:id', async ({ params: { id }, status }) =>
+	{
+		const tag = await getClient().conn
+			.selectFrom('blog_tag_localizations')
+			.select('id')
+			.where('id', '=', id)
+			.executeTakeFirstOrThrow();
+
+		if (!tag) {
+			return status(404, {
+				error: {
+					message: 'Not Found',
+				},
+			});
+		}
+
+		await getClient().conn
+			.deleteFrom('blog_tag_localizations')
+			.where('id', '=', id)
 			.execute();
 
 		return {
