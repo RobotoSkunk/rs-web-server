@@ -24,8 +24,8 @@ export interface DB_UrlMetadata
 	site: string;
 	title: string | null;
 	description: string | null;
-	picture_filename: string | null;
-	picture_size: Point | null;
+	picture_filename?: string | null;
+	picture_size?: Point | string | null;
 	created_at: Date;
 }
 

@@ -29,6 +29,7 @@ import authRouter from './auth';
 import blogsRouter from './blogs';
 import illustrationsRouter from './illustrations';
 import projectsRouter from './projects';
+import urlsRouter from './url';
 
 
 const adminRouter = new Elysia()
@@ -89,6 +90,7 @@ const adminRouter = new Elysia()
 	.use(blogsRouter)
 	.use(illustrationsRouter)
 	.use(projectsRouter)
+	.use(urlsRouter)
 ;
 
 export default adminRouter;
