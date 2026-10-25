@@ -212,9 +212,9 @@ const route = new Elysia({ prefix: '/blogs' })
 			.select([
 				'id',
 				'lang',
-				'title',
-				'description',
-				'content',
+				'title_draft as title',
+				'description_draft as description',
+				'content_draft as content',
 				'thumbnail_filename',
 				'thumbnail_size',
 				'created_at',
@@ -380,7 +380,54 @@ const route = new Elysia({ prefix: '/blogs' })
 			thumbnail: t.String(),
 		}),
 	})
-	.post('/content/:id/publish', async ({ params: { id }, body, status }) =>
+	.post('/content/:id/publish', async ({ params: { id }, status }) =>
+	{
+		const content = await getClient().conn
+			.selectFrom('blog_contents')
+			.select([
+				'created_at',
+				'updated_at',
+				'title_draft',
+				'description_draft',
+				'content_draft',
+			])
+			.where('id', '=', id)
+			.executeTakeFirst();
+
+		if (!content) {
+			return status(404, {
+				error: {
+					message: 'Not Found',
+				},
+			});
+		}
+
+		await getClient().conn
+			.updateTable('blog_contents')
+			.set({
+				title: content.title_draft!,
+				description: content.description_draft!,
+				content: content.content_draft!,
+
+				// If created_at didn't exist, set it to the current date
+				created_at: content.created_at ? undefined : new Date(),
+
+				// If created_at exists, it means the post was updated after the first publish and needs a new date
+				updated_at: content.created_at ? new Date() : undefined,
+				hidden: false,
+			})
+			.where('id', '=', id)
+			.executeTakeFirstOrThrow();
+
+		return {
+			success: true,
+		};
+	}, {
+		params: t.Object({
+			id: t.Number(),
+		}),
+	})
+	.post('/content/:id/draft', async ({ params: { id }, body, status }) =>
 	{
 		const content = await getClient().conn
 			.selectFrom('blog_contents')
@@ -402,16 +449,9 @@ const route = new Elysia({ prefix: '/blogs' })
 		await getClient().conn
 			.updateTable('blog_contents')
 			.set({
-				title: body.title,
-				description: body.description,
-				content: body.content,
-
-				// If created_at didn't exist, set it to the current date
-				created_at: content.created_at ? undefined : new Date(),
-
-				// If created_at exists, it means the post was updated after the first publish and needs a new date
-				updated_at: content.created_at ? new Date() : undefined,
-				hidden: false,
+				title_draft: body.title,
+				description_draft: body.description,
+				content_draft: body.content,
 			})
 			.where('id', '=', id)
 			.executeTakeFirstOrThrow();

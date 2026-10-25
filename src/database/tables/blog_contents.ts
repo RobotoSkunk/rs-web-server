@@ -26,6 +26,9 @@ export interface DB_BlogContents
 	title: string;
 	description: string;
 	content: string;
+	title_draft?: string;
+	description_draft?: string;
+	content_draft?: string;
 	thumbnail_filename?: string | null;
 	thumbnail_size?: Point | string | null;
 	created_at?: Date | null;
