@@ -308,6 +308,14 @@ const route = new Elysia({ prefix: '/blogs' })
 	})
 	.put('/content/:id', async ({ params: { id }, body, status }) =>
 	{
+		if (body.thumbnail.length > fileLimitSize || body.thumbnail.length > fileLimitSize) {
+			return status(413, {
+				error: {
+					message: 'The maximum file size allowed is 10 MiB.',
+				},
+			});
+		}
+
 		const content = await getClient().conn
 			.selectFrom('blog_contents')
 			.select('thumbnail_filename')
@@ -524,6 +532,14 @@ const route = new Elysia({ prefix: '/blogs' })
 	})
 	.put('/content/picture/:id', async ({ params: { id }, body, status }) =>
 	{
+		if (body.picture.length > fileLimitSize || body.picture_small.length > fileLimitSize) {
+			return status(413, {
+				error: {
+					message: 'The maximum file size allowed is 10 MiB.',
+				},
+			});
+		}
+
 		const picture = await getClient().conn
 			.selectFrom('blog_content_pictures')
 			.select([
