@@ -26,7 +26,7 @@ import fs from 'node:fs/promises';
 
 export const fileLimitSize = 10 * 1024 * 1024;
 
-export async function storeImage(dataUrl: string)
+function splitData(dataUrl: string)
 {
 	if (!dataUrl.startsWith('data:image/')) {
 		return false;
@@ -42,6 +42,17 @@ export async function storeImage(dataUrl: string)
 		return false;
 	}
 
+	return split;
+}
+
+export async function storeImage(dataUrl: string)
+{
+	const split = splitData(dataUrl);
+
+	if (!split) {
+		return false;
+	}
+
 	try {
 		const extension = split[0]!.replace('data:image/', '').split(';')[0]!;
 
@@ -53,6 +64,32 @@ export async function storeImage(dataUrl: string)
 
 		return {
 			filename,
+			buffer,
+			size: {
+				x: image.width,
+				y: image.height,
+			},
+		};
+	} catch (e) {
+		return false;
+	}
+}
+
+export async function updateImage(filename: string, dataUrl: string)
+{
+	const split = splitData(dataUrl);
+
+	if (!split) {
+		return false;
+	}
+
+	try {
+		const buffer = Buffer.from(split[1]!, 'base64');
+
+		const image = await loadImage(dataUrl);
+		await Bun.file(path.join(process.env.ASSETS_DIRECTORY!, filename)).write(buffer);
+
+		return {
 			buffer,
 			size: {
 				x: image.width,

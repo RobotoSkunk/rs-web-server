@@ -27,7 +27,7 @@ export interface DB_BlogContents
 	description: string;
 	content: string;
 	thumbnail_filename?: string | null;
-	thumbnail_size?: Point | null;
+	thumbnail_size?: Point | string | null;
 	created_at?: Date | null;
 	updated_at?: Date | null;
 	hidden?: boolean;
