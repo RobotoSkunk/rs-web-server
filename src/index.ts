@@ -28,12 +28,14 @@ import Secrets from './crypto/secrets';
 
 import adminRouter from './routes/admin';
 import publicRouter from './routes/public';
+import internalRouter from './routes/internal';
 
 
 // Verify if the required environment variables are present.
 const requiredEnvVariables = [
 	'PORT',
 	'ADMIN_PORT',
+	'INTERNAL_PORT',
 	'DB_NAME',
 	'DB_HOST',
 	'DB_PORT',
@@ -90,6 +92,13 @@ new Elysia()
 	.listen(process.env.ADMIN_PORT!);
 
 console.log(`[${new Date().toISOString()}] Admin API listening on port ${process.env.ADMIN_PORT}.`);
+
+// Start internal API
+new Elysia()
+	.use(internalRouter)
+	.listen(process.env.INTERNAL_PORT!);
+
+console.log(`[${new Date().toISOString()}] Internal API listening on port ${process.env.INTERNAL_PORT}.`);
 
 // Start public API
 new Elysia()
