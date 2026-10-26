@@ -136,6 +136,7 @@ const route = new Elysia({ prefix: '/blogs' })
 			.updateTable('blogs')
 			.set({
 				comment: body.comment,
+				hidden: body.hidden,
 			})
 			.returning('id')
 			.executeTakeFirstOrThrow();
@@ -148,9 +149,10 @@ const route = new Elysia({ prefix: '/blogs' })
 		params: t.Object({
 			id: t.Number(),
 		}),
-		body: t.Object({
+		body: t.Partial(t.Object({
 			comment: t.String(),
-		}),
+			hidden: t.Boolean(),
+		})),
 	})
 	.delete('/:id', async ({ params: { id }, status }) =>
 	{
