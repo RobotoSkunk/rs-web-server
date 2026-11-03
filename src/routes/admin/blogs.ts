@@ -294,6 +294,7 @@ const route = new Elysia({ prefix: '/blogs' })
 				description: '',
 				content: '',
 				blog_id: id,
+				hidden: true,
 			})
 			.returning('id')
 			.executeTakeFirstOrThrow();
