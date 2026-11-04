@@ -244,6 +244,7 @@ const route = new Elysia({ prefix: '/blogs' })
 				'alt',
 			])
 			.where('blog_content_id', '=', content.id!)
+			.orderBy('id', 'asc')
 			.execute();
 
 		const { thumbnail_filename, thumbnail_size, ...restOfContents } = content;
@@ -430,7 +431,7 @@ const route = new Elysia({ prefix: '/blogs' })
 			id: t.Number(),
 		}),
 	})
-	.post('/content/:id/draft', async ({ params: { id }, body, status }) =>
+	.patch('/content/:id/draft', async ({ params: { id }, body, status }) =>
 	{
 		const content = await getClient().conn
 			.selectFrom('blog_contents')
@@ -466,11 +467,11 @@ const route = new Elysia({ prefix: '/blogs' })
 		params: t.Object({
 			id: t.Number(),
 		}),
-		body: t.Object({
+		body: t.Partial(t.Object({
 			title: t.String(),
 			description: t.String(),
 			content: t.String(),
-		}),
+		})),
 	})
 
 	// Blog content pictures
