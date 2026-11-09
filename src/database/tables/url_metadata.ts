@@ -26,6 +26,7 @@ export interface DB_UrlMetadata
 	description: string | null;
 	picture_filename?: string | null;
 	picture_size?: Point | string | null;
+	picture_alt?: string | null;
 	created_at: Date;
 }
 

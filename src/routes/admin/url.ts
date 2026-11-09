@@ -116,6 +116,7 @@ const route = new Elysia({ prefix: '/urls' })
 				description: body.description,
 				picture_filename: filename,
 				picture_size: size,
+				picture_alt: body.picture_alt,
 				created_at: new Date(),
 			})
 			.execute();
@@ -129,6 +130,7 @@ const route = new Elysia({ prefix: '/urls' })
 			title: t.Optional(t.String()),
 			description: t.Optional(t.String()),
 			picture: t.Optional(t.String()),
+			picture_alt: t.Optional(t.String()),
 		}),
 	})
 	.delete('/', async ({ query, status }) =>

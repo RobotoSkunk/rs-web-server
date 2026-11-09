@@ -32,3 +32,4 @@ export * as _20261023T055910170Z from './20261023T055910170Z-blogging.ts';
 export * as _20261024T033011784Z from './20261024T033011784Z-fix-blog-pictures.ts';
 export * as _20261024T232404317Z from './20261024T232404317Z-nullable-blog-contents.ts';
 export * as _20261025T234224722Z from './20261025T234224722Z-blog-draft.ts';
+export * as _20261109T072936242Z from './20261109T072936242Z-url-metadata-img-alt.ts';
