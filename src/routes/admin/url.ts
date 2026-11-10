@@ -45,9 +45,41 @@ const route = new Elysia({ prefix: '/urls' })
 
 		return urls;
 	})
+	.get('/query', async ({ query, status }) =>
+	{
+		const url = await getClient().conn
+			.selectFrom('url_metadata')
+			.selectAll()
+			.where('url', '=', query.q)
+			.executeTakeFirst();
+
+		if (!url) {
+			return status(404, {
+				error: {
+					message: 'Not Found',
+				},
+			});
+		}
+
+		return {
+			url: url.url,
+			site: url.site,
+			title: url.title,
+			description: url.description,
+			image: url.picture_filename ? {
+				data: url.picture_filename,
+				size: url.picture_size,
+				alt: url.picture_alt,
+			} : null,
+		};
+	}, {
+		query: t.Object({
+			q: t.String(),
+		}),
+	})
 	.post('/', async ({ body, status }) =>
 	{
-		if (body.picture && body.picture.length > fileLimitSize) {
+		if (body.image && body.image.data.length > fileLimitSize) {
 			return status(413, {
 				error: {
 					message: 'The maximum file size allowed is 10 MiB.',
@@ -59,7 +91,7 @@ const route = new Elysia({ prefix: '/urls' })
 			.selectFrom('url_metadata')
 			.select('site')
 			.where('url', '=', body.url)
-			.execute();
+			.executeTakeFirst();
 
 		if (metadata) {
 			return status(403, {
@@ -71,10 +103,9 @@ const route = new Elysia({ prefix: '/urls' })
 
 		let filename: string | null = null;
 		let size: string | null = null;
-		let site = 'generic';
 
-		if (body.picture) {
-			const picture = await storeImage(body.picture);
+		if (body.image) {
+			const picture = await storeImage(body.image.data);
 
 			if (!picture) {
 				return status(400, {
@@ -88,35 +119,16 @@ const route = new Elysia({ prefix: '/urls' })
 			size = `(${picture.size.x}, ${picture.size.y})`;
 		}
 
-		switch (true) {
-			case body.url.includes('youtube.com'):
-				site = 'youtube';
-				break;
-
-			case body.url.includes('x.com'):
-			case body.url.includes('twitter.com'):
-				site = 'twitter';
-				break;
-
-			case body.url.includes('reddit.com'):
-				site = 'reddit';
-				break;
-
-			case body.url.includes('wikipedia.com'):
-				site = 'wikipedia';
-				break;
-		}
-
 		await getClient().conn
 			.insertInto('url_metadata')
 			.values({
 				url: body.url,
-				site,
-				title: body.title,
-				description: body.description,
-				picture_filename: filename,
-				picture_size: size,
-				picture_alt: body.picture_alt,
+				site: body.site,
+				title: body.title ?? null,
+				description: body.description ?? null,
+				picture_filename: filename ?? null,
+				picture_size: size ?? null,
+				picture_alt: body.image ? body.image.alt : null,
 				created_at: new Date(),
 			})
 			.execute();
@@ -125,12 +137,27 @@ const route = new Elysia({ prefix: '/urls' })
 			success: true,
 		};
 	}, {
+		// body: t.Object({
+		// 	url: t.String(),
+		// 	site: t.String(),
+		// 	title: t.Optional(t.String()),
+		// 	description: t.Optional(t.String()),
+		// 	picture: t.Optional(t.String()),
+		// 	picture_alt: t.Optional(t.String()),
+		// }),
 		body: t.Object({
 			url: t.String(),
-			title: t.Optional(t.String()),
-			description: t.Optional(t.String()),
-			picture: t.Optional(t.String()),
-			picture_alt: t.Optional(t.String()),
+			site: t.String(),
+			title: t.Nullable(t.String()),
+			description: t.Nullable(t.String()),
+			image: t.Nullable(t.Object({
+				data: t.String(),
+				alt: t.Nullable(t.String()),
+				size: t.Nullable(t.Object({
+					x: t.Nullable(t.Number()),
+					y: t.Nullable(t.Number()),
+				})),
+			})),
 		}),
 	})
 	.delete('/', async ({ query, status }) =>
