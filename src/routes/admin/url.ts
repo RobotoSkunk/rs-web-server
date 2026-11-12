@@ -137,14 +137,6 @@ const route = new Elysia({ prefix: '/urls' })
 			success: true,
 		};
 	}, {
-		// body: t.Object({
-		// 	url: t.String(),
-		// 	site: t.String(),
-		// 	title: t.Optional(t.String()),
-		// 	description: t.Optional(t.String()),
-		// 	picture: t.Optional(t.String()),
-		// 	picture_alt: t.Optional(t.String()),
-		// }),
 		body: t.Object({
 			url: t.String(),
 			site: t.String(),
